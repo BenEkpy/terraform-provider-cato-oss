@@ -114,12 +114,12 @@ func (r *socketSiteResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	query := graphQLRequest{
-		Query: `mutation addSocketSite ($accountId: ID!, $input: AddSocketSiteInput!) { 
-			site(accountId: $accountId) { 
-				addSocketSite (input: $input) { 
-					siteId 
-				} 
-			} 
+		Query: `mutation addSocketSite($accountId:ID!, $input:AddSocketSiteInput!){
+			site(accountId:$accountId) {
+				addSocketSite(input:$input) {
+					siteId
+				}
+			}
 		}`,
 		Variables: map[string]interface{}{
 			"accountId": string(plan.AccountID.ValueString()),

@@ -1,5 +1,5 @@
 # Create a AWS Socket site
-resource "cato_socketsite" "aws_site_1" {
+resource "cato-oss_socketsite" "aws_site_1" {
     account_id = "1234"
     name = "aws_site_1"
     site_type = "DATACENTER"
