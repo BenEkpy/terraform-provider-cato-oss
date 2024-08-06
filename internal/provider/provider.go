@@ -32,7 +32,7 @@ type catoProvider struct {
 type catoProviderModel struct {
 	BaseURL   types.String `tfsdk:"baseurl"`
 	Token     types.String `tfsdk:"token"`
-	AccountId types.String `tfsdk:"accountid"`
+	AccountId types.String `tfsdk:"account_id"`
 }
 
 func (p *catoProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -52,7 +52,7 @@ func (p *catoProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp 
 				Optional:    true,
 				Sensitive:   true,
 			},
-			"accountid": schema.StringAttribute{
+			"account_id": schema.StringAttribute{
 				Description: "AccountId for the Cato API",
 				Required:    true,
 			},
@@ -87,9 +87,9 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 
 	if config.AccountId.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("accountid"),
-			"Unknown Cato API accountid",
-			"The provider cannot create the CATO API client as there is an unknown configuration value for the CATO API accountid. ",
+			path.Root("account_id"),
+			"Unknown Cato API account_id",
+			"The provider cannot create the CATO API client as there is an unknown configuration value for the CATO API account_id. ",
 		)
 	}
 
