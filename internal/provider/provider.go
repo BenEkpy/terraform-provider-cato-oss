@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/BenEkpy/cato-go-client-oss/catogo"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -29,8 +30,9 @@ type catoProvider struct {
 }
 
 type catoProviderModel struct {
-	BaseURL types.String `tfsdk:"baseurl"`
-	Token   types.String `tfsdk:"token"`
+	BaseURL   types.String `tfsdk:"baseurl"`
+	Token     types.String `tfsdk:"token"`
+	AccountId types.String `tfsdk:"accountid"`
 }
 
 func (p *catoProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -50,6 +52,10 @@ func (p *catoProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp 
 				Optional:    true,
 				Sensitive:   true,
 			},
+			"accountid": schema.StringAttribute{
+				Description: "AccountId for the Cato API",
+				Required:    true,
+			},
 		},
 	}
 }
@@ -67,7 +73,7 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		resp.Diagnostics.AddAttributeError(
 			path.Root("baseurl"),
 			"Unknown Cato API Base URL ",
-			"The provider cannot create the CATO API client as there is an unknown configuration value for the CATO API Base URL. ",
+			"The provider cannot create the CATO API client as there is an unknown configuration value for the CATO API base URL. ",
 		)
 	}
 
@@ -75,7 +81,15 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		resp.Diagnostics.AddAttributeError(
 			path.Root("token"),
 			"Unknown Cato API Token",
-			"The provider cannot create the CATO API client as there is an unknown configuration value for the CATO API Token. ",
+			"The provider cannot create the CATO API client as there is an unknown configuration value for the CATO API token. ",
+		)
+	}
+
+	if config.AccountId.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("accountid"),
+			"Unknown Cato API accountid",
+			"The provider cannot create the CATO API client as there is an unknown configuration value for the CATO API accountid. ",
 		)
 	}
 
@@ -93,6 +107,8 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 	if !config.Token.IsNull() {
 		token = config.Token.ValueString()
 	}
+
+	accountId := config.AccountId.ValueString()
 
 	if baseurl == "" {
 		resp.Diagnostics.AddAttributeError(
@@ -114,7 +130,7 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		return
 	}
 
-	client := CatoClient(baseurl, token)
+	client := catogo.CatoClient(baseurl, token, accountId)
 
 	resp.DataSourceData = client
 	resp.ResourceData = client
@@ -123,13 +139,14 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 
 func (p *catoProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		// NewEntityLookupDataSource,
-		NewAccountSnapshotDataSource,
+		NewAccountSnapshotSiteDataSource,
 	}
 }
 
 func (p *catoProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewSocketSiteResource,
+		NewAdminResource,
+		NewStaticHostResource,
 	}
 }
