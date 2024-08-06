@@ -3,7 +3,7 @@ module terraform-provider-cato-oss
 go 1.21.5
 
 require (
-	github.com/BenEkpy/cato-go-client-oss v0.1.4
+	github.com/BenEkpy/cato-go-client-oss v0.1.5
 	github.com/hashicorp/terraform-plugin-framework v1.10.0
 )
 

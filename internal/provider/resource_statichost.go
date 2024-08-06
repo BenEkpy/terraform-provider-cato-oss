@@ -150,7 +150,8 @@ func (r *staticHostResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	_, err := r.client.RemoveStaticHost(state.SiteId.ValueString(), state.Id.ValueString())
+	// check if site exist before removing static host
+	siteExists, err := r.client.SiteExists(state.SiteId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to connect or request the Cato API",
@@ -158,4 +159,16 @@ func (r *staticHostResource) Delete(ctx context.Context, req resource.DeleteRequ
 		)
 		return
 	}
+
+	if siteExists {
+		_, err := r.client.RemoveStaticHost(state.SiteId.ValueString(), state.Id.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to connect or request the Cato API",
+				err.Error(),
+			)
+			return
+		}
+	}
+
 }

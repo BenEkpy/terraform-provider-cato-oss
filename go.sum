@@ -1,5 +1,5 @@
-github.com/BenEkpy/cato-go-client-oss v0.1.4 h1:9VNCYn3qg9gqDdu3/FGO2Nd8qNB6uuAsO6CV2PcN9tE=
-github.com/BenEkpy/cato-go-client-oss v0.1.4/go.mod h1:B6PlMkVZnvSzTfLQPBV4U+3ZcFxLHHhIZ/lAKv/hxNM=
+github.com/BenEkpy/cato-go-client-oss v0.1.5 h1:448xZCUmaIOxOdayIPxLmbQEYcTzUmexqkq2k+B+ZG8=
+github.com/BenEkpy/cato-go-client-oss v0.1.5/go.mod h1:B6PlMkVZnvSzTfLQPBV4U+3ZcFxLHHhIZ/lAKv/hxNM=
 github.com/bufbuild/protocompile v0.4.0 h1:LbFKd2XowZvQ/kajzguUp2DC9UEIQhIq77fZZlaQsNA=
 github.com/bufbuild/protocompile v0.4.0/go.mod h1:3v93+mbWn/v3xzN+31nwkJfrEpAUwp+BagBSZWx+TP8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
