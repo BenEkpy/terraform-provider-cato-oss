@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 
-	"github.com/BenEkpy/cato-go-client-oss/catogo"
+	"github.com/BenEkpy/terraform-provider-cato-oss/internal/catogo"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -49,6 +49,9 @@ func (r *staticHostResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"site_id": schema.StringAttribute{
 				Description: "Host Site ID",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Host name",
@@ -150,7 +153,7 @@ func (r *staticHostResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	// check if site exist before removing static host
+	// check if site exist before removing
 	siteExists, err := r.client.SiteExists(state.SiteId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(

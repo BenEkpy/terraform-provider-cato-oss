@@ -1,10 +1,10 @@
-module terraform-provider-cato-oss
+module github.com/BenEkpy/terraform-provider-cato-oss
 
 go 1.21.5
 
 require (
-	github.com/BenEkpy/cato-go-client-oss v0.1.5
-	github.com/hashicorp/terraform-plugin-framework v1.10.0
+	github.com/hashicorp/terraform-plugin-framework v1.11.0
+	github.com/hashicorp/terraform-plugin-log v0.9.0
 )
 
 require (
@@ -14,7 +14,6 @@ require (
 	github.com/hashicorp/go-plugin v1.6.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/terraform-plugin-go v0.23.0 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.9.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.2.3 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect

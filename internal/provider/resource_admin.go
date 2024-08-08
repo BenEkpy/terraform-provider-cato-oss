@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 
-	"github.com/BenEkpy/cato-go-client-oss/catogo"
+	"github.com/BenEkpy/terraform-provider-cato-oss/internal/catogo"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"

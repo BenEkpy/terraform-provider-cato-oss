@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/BenEkpy/cato-go-client-oss/catogo"
+	"github.com/BenEkpy/terraform-provider-cato-oss/internal/catogo"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -146,7 +146,9 @@ func (p *catoProvider) DataSources(_ context.Context) []func() datasource.DataSo
 func (p *catoProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewSocketSiteResource,
+		NewWanInterfaceResource,
 		NewAdminResource,
 		NewStaticHostResource,
+		NewNetworkRangeResource,
 	}
 }
