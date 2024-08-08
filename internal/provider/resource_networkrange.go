@@ -42,7 +42,7 @@ type NetworkRange struct {
 }
 
 func (r *networkRangeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_networkrange"
+	resp.TypeName = req.ProviderTypeName + "_network_range"
 }
 
 func (r *networkRangeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

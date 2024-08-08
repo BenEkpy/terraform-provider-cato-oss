@@ -35,7 +35,7 @@ type WanInterface struct {
 }
 
 func (r *wanInterfaceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_waninterface"
+	resp.TypeName = req.ProviderTypeName + "_wan_interface"
 }
 
 func (r *wanInterfaceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

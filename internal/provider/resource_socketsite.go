@@ -58,7 +58,7 @@ type DhcpSettings struct {
 }
 
 func (r *socketSiteResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_socketsite"
+	resp.TypeName = req.ProviderTypeName + "_socket_site"
 }
 
 func (r *socketSiteResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

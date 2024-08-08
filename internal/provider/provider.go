@@ -114,7 +114,7 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		resp.Diagnostics.AddAttributeError(
 			path.Root("baseurl"),
 			"Missing Cato API Base URL ",
-			"The provider cannot create the CATO API client as there is a missing or empty value for the CATO API Token. ",
+			"The provider cannot create the CATO API client as there is a missing or empty value for the CATO API URL. ",
 		)
 	}
 
@@ -150,5 +150,6 @@ func (p *catoProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewAdminResource,
 		NewStaticHostResource,
 		NewNetworkRangeResource,
+		// NewInternetFirewallRuleResource,
 	}
 }

@@ -33,7 +33,7 @@ type StaticHost struct {
 }
 
 func (r *staticHostResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_statichost"
+	resp.TypeName = req.ProviderTypeName + "_static_host"
 }
 
 func (r *staticHostResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
