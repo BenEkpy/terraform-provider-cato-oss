@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/BenEkpy/terraform-provider-cato-oss/internal/catogo"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -11,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
@@ -178,10 +176,6 @@ func (r *networkRangeResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	// DEBUGGGG
-	jsonlog, _ := json.Marshal(input)
-	tflog.Info(ctx, string(jsonlog))
-
 	body, err := r.client.AddNetworkRange(lan_interface.Id, input)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -241,10 +235,6 @@ func (r *networkRangeResource) Update(ctx context.Context, req resource.UpdateRe
 			RelayGroupId: DhcpSettings.RelayGroupId.ValueStringPointer(),
 		}
 	}
-
-	// DEBUGGGG
-	jsonlog, _ := json.Marshal(input)
-	tflog.Info(ctx, string(jsonlog))
 
 	_, err := r.client.UpdateNetworkRange(plan.Id.ValueString(), input)
 	if err != nil {

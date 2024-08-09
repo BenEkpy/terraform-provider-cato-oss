@@ -105,6 +105,7 @@ func (r *wanInterfaceResource) Create(ctx context.Context, req resource.CreateRe
 			Precedence: *plan.Precedence.ValueStringPointer(),
 		},
 	}
+
 	_, err := r.client.UpdateSocketInterface(plan.SiteId.ValueString(), plan.InterfaceID.ValueString(), input)
 	if err != nil {
 		resp.Diagnostics.AddError(

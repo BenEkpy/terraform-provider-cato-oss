@@ -307,7 +307,6 @@ func (r *adminResource) Update(ctx context.Context, req resource.UpdateRequest, 
 			input.ManagedRoles[index_managed_role].AllowedAccounts = append(input.ManagedRoles[index_managed_role].AllowedAccounts, allowed_account.ValueString())
 		}
 	}
-	// }
 
 	_, err := r.client.UpdateAdmin(plan.Id.ValueString(), input)
 	if err != nil {
