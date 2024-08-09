@@ -8,6 +8,12 @@ description: |-
 
 # cato-oss Provider
 
+The Cato Open Source Software provider is used to interact with resources supported by Cato Networks. The provider needs to be configured with the proper API credentials before it can be used.
+
+The current API that the Cato provider is calling requires sequential execution. You can either use `depends_on` or specify the `parallelism` flag. Cato recommends the latter and setting the value to `1`. Example call: `terraform apply -parallelism=1`.
+
+Use the navigation to the left to read about the available resources.
+
 ## Example Usage
 
 ```terraform
