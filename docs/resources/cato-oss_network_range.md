@@ -117,7 +117,7 @@ resource "cato-oss_network_range" "routed1" {
 - `local_ip` (String) Network range local ip address
 - `name` (String) Interface name
 - `range_type` (String) Network range type ('Direct','Native','Routed','SecondaryNative','VLAN')
-- `site_id` (Int) Cato Account ID (can be found into the URL on the CMA)
+- `site_id` (Int) Cato Site ID
 - `subnet` (String) Network range subnet
 
 ### Optional
