@@ -204,66 +204,6 @@ type PolicyTracking struct {
 	Alert PolicyRuleTrackingAlert `json:"alert,omitempty"`
 }
 
-type InternetFirewallSourceInput struct {
-	Ip                []string              `json:"ip,omitempty"`
-	Host              []ObjectRefInput      `json:"host,omitempty"`
-	Site              []ObjectRefInput      `json:"site,omitempty"`
-	Subnet            []string              `json:"subnet,omitempty"`
-	IpRange           []IpAddressRangeInput `json:"ipRange,omitempty"`
-	GlobalIpRange     []ObjectRefInput      `json:"globalIpRange,omitempty"`
-	NetworkInterface  []ObjectRefInput      `json:"networkInterface,omitempty"`
-	SiteNetworkSubnet []ObjectRefInput      `json:"siteNetworkSubnet,omitempty"`
-	FloatingSubnet    []ObjectRefInput      `json:"floatingSubnet,omitempty"`
-	User              []ObjectRefInput      `json:"user,omitempty"`
-	UsersGroup        []ObjectRefInput      `json:"usersGroup,omitempty"`
-	Group             []ObjectRefInput      `json:"group,omitempty"`
-	SystemGroup       []ObjectRefInput      `json:"systemGroup,omitempty"`
-}
-
-type PolicyRuleTrackingAlertInput struct {
-	Enabled           bool             `json:"enabled,omitempty"`
-	Frequency         string           `json:"frequency,omitempty"`
-	SubscriptionGroup []ObjectRefInput `json:"subscriptionGroup,omitempty"`
-	Webhook           []ObjectRefInput `json:"webhook,omitempty"`
-	MailingList       []ObjectRefInput `json:"mailingList,omitempty"`
-}
-
-type PolicyRuleTrackingEventInput struct {
-	Enabled bool `json:"enabled,omitempty"`
-}
-
-type PolicyScheduleInput struct {
-	ActiveOn        string                      `json:"activeOn,omitempty"`
-	CustomTimeframe *PolicyCustomTimeframeInput `json:"customTimeframe,omitempty"`
-	CustomRecurring *PolicyCustomRecurringInput `json:"customRecurring,omitempty"`
-}
-
-type PolicyTrackingInput struct {
-	Event PolicyRuleTrackingEventInput `json:"event,omitempty"`
-	Alert PolicyRuleTrackingAlertInput `json:"alert,omitempty"`
-}
-
-type IpAddressRangeInput struct {
-	From string `json:"from,omitempty"`
-	To   string `json:"to,omitempty"`
-}
-
-type PortRangeInput struct {
-	From string `json:"from,omitempty"`
-	To   string `json:"to,omitempty"`
-}
-
-type CustomServiceInput struct {
-	Port      []string        `json:"port,omitempty"`
-	PortRange *PortRangeInput `json:"portRange,omitempty"`
-	Protocol  string          `json:"protocol,omitempty"`
-}
-
-type ObjectRefInput struct {
-	By    string `json:"by,omitempty"`
-	Input string `json:"input,omitempty"`
-}
-
 type InternetFirewallAddRuleDataInput struct {
 	Enabled          bool                                 `json:"enabled,omitempty"`
 	Name             string                               `json:"name,omitempty"`
@@ -281,35 +221,20 @@ type InternetFirewallAddRuleDataInput struct {
 	Exceptions       []InternetFirewallRuleExceptionInput `json:"exceptions,omitempty"`
 }
 
-type InternetFirewallUpdateRuleDataInput struct {
-	Enabled          bool                                 `json:"enabled,omitempty"`
-	Name             string                               `json:"name,omitempty"`
-	Description      string                               `json:"description,omitempty"`
-	Source           *InternetFirewallSourceInput         `json:"source,omitempty"`
-	ConnectionOrigin string                               `json:"connectionOrigin,omitempty"`
-	Country          []ObjectRefInput                     `json:"country,omitempty"`
-	Device           []ObjectRefInput                     `json:"device,omitempty"`
-	DeviceOS         []string                             `json:"deviceOS,omitempty"`
-	Destination      *InternetFirewallDestinationInput    `json:"destination,omitempty"`
-	Service          *InternetFirewallServiceTypeInput    `json:"service,omitempty"`
-	Action           string                               `json:"action,omitempty"`
-	Tracking         *PolicyTrackingInput                 `json:"tracking,omitempty"`
-	Schedule         *PolicyScheduleInput                 `json:"schedule,omitempty"`
-	Exceptions       []InternetFirewallRuleExceptionInput `json:"exceptions,omitempty"`
-}
-
-type InternetFirewallAddRuleInput struct {
-	Rule InternetFirewallAddRuleDataInput `json:"rule,omitempty"`
-	At   *PolicyRulePositionInput         `json:"at"`
-}
-
-type InternetFirewallUpdateRuleInput struct {
-	Id   string                           `json:"id,omitempty"`
-	Rule InternetFirewallAddRuleDataInput `json:"rule,omitempty"`
-}
-
-type InternetFirewallRemoveRuleInput struct {
-	Id string `json:"id,omitempty"`
+type InternetFirewallSourceInput struct {
+	Ip                []string              `json:"ip,omitempty"`
+	Host              []ObjectRefInput      `json:"host,omitempty"`
+	Site              []ObjectRefInput      `json:"site,omitempty"`
+	Subnet            []string              `json:"subnet,omitempty"`
+	IpRange           []IpAddressRangeInput `json:"ipRange,omitempty"`
+	GlobalIpRange     []ObjectRefInput      `json:"globalIpRange,omitempty"`
+	NetworkInterface  []ObjectRefInput      `json:"networkInterface,omitempty"`
+	SiteNetworkSubnet []ObjectRefInput      `json:"siteNetworkSubnet,omitempty"`
+	FloatingSubnet    []ObjectRefInput      `json:"floatingSubnet,omitempty"`
+	User              []ObjectRefInput      `json:"user,omitempty"`
+	UsersGroup        []ObjectRefInput      `json:"usersGroup,omitempty"`
+	Group             []ObjectRefInput      `json:"group,omitempty"`
+	SystemGroup       []ObjectRefInput      `json:"systemGroup,omitempty"`
 }
 
 type InternetFirewallDestinationInput struct {
@@ -358,6 +283,184 @@ type PolicyCustomTimeframeInput struct {
 type PolicyRulePositionInput struct {
 	Position *string `json:"position,omitempty"`
 	Ref      *string `json:"ref,omitempty"`
+}
+
+type InternetFirewallAddRuleInput struct {
+	Rule InternetFirewallAddRuleDataInput `json:"rule"`
+	At   *PolicyRulePositionInput         `json:"at"`
+}
+
+type PolicyRuleTrackingAlertInput struct {
+	Enabled           bool             `json:"enabled,omitempty"`
+	Frequency         string           `json:"frequency,omitempty"`
+	SubscriptionGroup []ObjectRefInput `json:"subscriptionGroup,omitempty"`
+	Webhook           []ObjectRefInput `json:"webhook,omitempty"`
+	MailingList       []ObjectRefInput `json:"mailingList,omitempty"`
+}
+
+type PolicyRuleTrackingEventInput struct {
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+type PolicyScheduleInput struct {
+	ActiveOn        string                      `json:"activeOn,omitempty"`
+	CustomTimeframe *PolicyCustomTimeframeInput `json:"customTimeframe,omitempty"`
+	CustomRecurring *PolicyCustomRecurringInput `json:"customRecurring,omitempty"`
+}
+
+type PolicyTrackingInput struct {
+	Event PolicyRuleTrackingEventInput `json:"event,omitempty"`
+	Alert PolicyRuleTrackingAlertInput `json:"alert,omitempty"`
+}
+
+type IpAddressRangeInput struct {
+	From string `json:"from,omitempty"`
+	To   string `json:"to,omitempty"`
+}
+
+type PortRangeInput struct {
+	From string `json:"from,omitempty"`
+	To   string `json:"to,omitempty"`
+}
+
+type CustomServiceInput struct {
+	Port      []string        `json:"port,omitempty"`
+	PortRange *PortRangeInput `json:"portRange,omitempty"`
+	Protocol  string          `json:"protocol,omitempty"`
+}
+
+type ObjectRefInput struct {
+	By    string `json:"by,omitempty"`
+	Input string `json:"input,omitempty"`
+}
+
+type InternetFirewallUpdateRuleInput struct {
+	Id   string                              `json:"id"`
+	Rule InternetFirewallUpdateRuleDataInput `json:"rule"`
+}
+
+type InternetFirewallUpdateRuleDataInput struct {
+	Enabled          bool                                       `json:"enabled"`
+	Name             string                                     `json:"name"`
+	Description      string                                     `json:"description"`
+	Source           *InternetFirewallUpdateSourceInput         `json:"source"`
+	ConnectionOrigin string                                     `json:"connectionOrigin,omitempty"`
+	Country          []ObjectRefUpdateInput                     `json:"country"`
+	Device           []ObjectRefUpdateInput                     `json:"device"`
+	DeviceOS         []string                                   `json:"deviceOS"`
+	Destination      *InternetFirewallUpdateDestinationInput    `json:"destination"`
+	Service          *InternetFirewallUpdateServiceTypeInput    `json:"service"`
+	Action           string                                     `json:"action"`
+	Tracking         *PolicyTrackingUpdateInput                 `json:"tracking"`
+	Schedule         *PolicyScheduleUpdateInput                 `json:"schedule"`
+	Exceptions       []InternetFirewallUpdateRuleExceptionInput `json:"exceptions"`
+}
+
+type InternetFirewallUpdateSourceInput struct {
+	Ip                []string                    `json:"ip"`
+	Host              []ObjectRefUpdateInput      `json:"host"`
+	Site              []ObjectRefUpdateInput      `json:"site"`
+	Subnet            []string                    `json:"subnet"`
+	IpRange           []IpAddressRangeUpdateInput `json:"ipRange"`
+	GlobalIpRange     []ObjectRefUpdateInput      `json:"globalIpRange"`
+	NetworkInterface  []ObjectRefUpdateInput      `json:"networkInterface"`
+	SiteNetworkSubnet []ObjectRefUpdateInput      `json:"siteNetworkSubnet"`
+	FloatingSubnet    []ObjectRefUpdateInput      `json:"floatingSubnet"`
+	User              []ObjectRefUpdateInput      `json:"user"`
+	UsersGroup        []ObjectRefUpdateInput      `json:"usersGroup"`
+	Group             []ObjectRefUpdateInput      `json:"group"`
+	SystemGroup       []ObjectRefUpdateInput      `json:"systemGroup"`
+}
+
+type InternetFirewallUpdateDestinationInput struct {
+	Application            []ObjectRefUpdateInput      `json:"application"`
+	CustomApp              []ObjectRefUpdateInput      `json:"customApp"`
+	AppCategory            []ObjectRefUpdateInput      `json:"appCategory"`
+	CustomCategory         []ObjectRefUpdateInput      `json:"customCategory"`
+	SanctionedAppsCategory []ObjectRefUpdateInput      `json:"sanctionedAppsCategory"`
+	Country                []ObjectRefUpdateInput      `json:"country"`
+	Domain                 []string                    `json:"domain"`
+	Fqdn                   []string                    `json:"fqdn"`
+	Ip                     []string                    `json:"ip"`
+	Subnet                 []string                    `json:"subnet"`
+	IpRange                []IpAddressRangeUpdateInput `json:"ipRange"`
+	GlobalIpRange          []ObjectRefUpdateInput      `json:"globalIpRange"`
+	RemoteAsn              []string                    `json:"remoteAsn"`
+}
+
+type InternetFirewallUpdateRuleExceptionInput struct {
+	Name             string                                 `json:"name"`
+	Source           InternetFirewallUpdateSourceInput      `json:"source"`
+	DeviceOS         []string                               `json:"deviceOS"`
+	Country          []ObjectRefUpdateInput                 `json:"country"`
+	Device           []ObjectRefUpdateInput                 `json:"device"`
+	Destination      InternetFirewallUpdateDestinationInput `json:"destination"`
+	Service          InternetFirewallUpdateServiceTypeInput `json:"service"`
+	ConnectionOrigin string                                 `json:"connectionOrigin"`
+}
+
+type InternetFirewallUpdateServiceTypeInput struct {
+	Standard []ObjectRefInput           `json:"standard"`
+	Custom   []CustomServiceUpdateInput `json:"custom"`
+}
+
+type PolicyCustomRecurringUpdateInput struct {
+	From string   `json:"from"`
+	To   string   `json:"to"`
+	Days []string `json:"days"`
+}
+
+type PolicyCustomTimeframeUpdateInput struct {
+	From string `json:"from"`
+	To   string `json:"to"`
+}
+
+type PolicyRuleTrackingAlertUpdateInput struct {
+	Enabled           bool                   `json:"enabled"`
+	Frequency         string                 `json:"frequency"`
+	SubscriptionGroup []ObjectRefUpdateInput `json:"subscriptionGroup"`
+	Webhook           []ObjectRefUpdateInput `json:"webhook"`
+	MailingList       []ObjectRefUpdateInput `json:"mailingList"`
+}
+
+type PolicyRuleTrackingEventUpdateInput struct {
+	Enabled bool `json:"enabled"`
+}
+
+type PolicyScheduleUpdateInput struct {
+	ActiveOn        string                            `json:"activeOn"`
+	CustomTimeframe *PolicyCustomTimeframeUpdateInput `json:"customTimeframe"`
+	CustomRecurring *PolicyCustomRecurringUpdateInput `json:"customRecurring"`
+}
+
+type PolicyTrackingUpdateInput struct {
+	Event PolicyRuleTrackingEventUpdateInput `json:"event"`
+	Alert PolicyRuleTrackingAlertUpdateInput `json:"alert"`
+}
+
+type IpAddressRangeUpdateInput struct {
+	From string `json:"from"`
+	To   string `json:"to"`
+}
+
+type PortRangeUpdateInput struct {
+	From string `json:"from"`
+	To   string `json:"to"`
+}
+
+type CustomServiceUpdateInput struct {
+	Port      []string              `json:"port"`
+	PortRange *PortRangeUpdateInput `json:"portRange"`
+	Protocol  string                `json:"protocol"`
+}
+
+type ObjectRefUpdateInput struct {
+	By    string `json:"by"`
+	Input string `json:"input"`
+}
+
+type InternetFirewallRemoveRuleInput struct {
+	Id string `json:"id"`
 }
 
 func (c *Client) GetInternetFirewallPolicy() (*InternetFirewallPolicy, error) {

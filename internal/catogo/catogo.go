@@ -14,6 +14,7 @@ type Client struct {
 	token      string
 	baseurl    string
 	accountId  string
+	tfversion  string
 }
 
 type graphQLRequest struct {
@@ -34,7 +35,7 @@ type Response struct {
 	Errors []interface{} `json:"errors,omitempty"`
 }
 
-func CatoClient(baseurl string, token string, accountId string) *Client {
+func CatoClient(baseurl string, token string, accountId string, tfversion string) *Client {
 
 	client := &http.Client{
 		Timeout: 60 * time.Second,
@@ -45,6 +46,7 @@ func CatoClient(baseurl string, token string, accountId string) *Client {
 		baseurl:    baseurl,
 		token:      token,
 		accountId:  accountId,
+		tfversion:  tfversion,
 	}
 }
 
@@ -57,9 +59,6 @@ func (c *Client) do(reqBody graphQLRequest) ([]byte, error) {
 		return nil, err
 	}
 
-	//debug request
-	// fmt.Println(string(jsonReqBody))
-
 	req, err := http.NewRequest("POST", c.baseurl, bytes.NewBuffer(jsonReqBody))
 	if err != nil {
 		return nil, err
@@ -67,6 +66,7 @@ func (c *Client) do(reqBody graphQLRequest) ([]byte, error) {
 
 	req.Header.Set("x-api-key", c.token)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "cato-terraform-"+c.tfversion)
 
 	res, err := c.httpclient.Do(req)
 	if err != nil {

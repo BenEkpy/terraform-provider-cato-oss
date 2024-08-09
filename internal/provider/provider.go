@@ -130,7 +130,7 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		return
 	}
 
-	client := catogo.CatoClient(baseurl, token, accountId)
+	client := catogo.CatoClient(baseurl, token, accountId, p.version)
 
 	resp.DataSourceData = client
 	resp.ResourceData = client
@@ -150,6 +150,5 @@ func (p *catoProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewAdminResource,
 		NewStaticHostResource,
 		NewNetworkRangeResource,
-		// NewInternetFirewallRuleResource,
 	}
 }
