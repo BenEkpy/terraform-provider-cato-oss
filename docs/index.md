@@ -8,15 +8,42 @@ description: |-
 
 # cato-oss Provider
 
-
-
 ## Example Usage
 
 ```terraform
 # Configuration based authentication
+terraform {
+  required_providers {
+    cato-oss = {
+      source = "registry.terraform.io/benekpy/cato-oss"
+      version = "~> 0.2.0"
+    }
+  }
+}
+
 provider "cato-oss" {
     baseurl = "https://api.catonetworks.com/api/v1/graphql2"
     token = "xxxxxxx"
+    account_id = "xxxxxxx"
+}
+
+resource "cato-oss_socketsite" "site1" {
+    name = "site1"
+    description = "site1 AWS Datacenter"
+    site_type = "DATACENTER"
+    connection_type = "SOCKET_AWS1500"
+    native_network_range = "192.168.25.0/24"
+    local_ip = "192.168.25.100"
+    site_location = {
+        country_code = "FR",
+        timezone = "Europe/Paris"
+    }
+}
+
+resource "cato-oss_statichost" "host" {
+    site_id = cato-oss_socketsite.site1.id
+    name = "test-terraform"
+    ip = "192.168.25.24"
 }
 ```
 
@@ -27,3 +54,4 @@ provider "cato-oss" {
 
 - `baseurl` (String) URL for the Cato API. Can be provided using CATO_BASEURL environment variable.
 - `token` (String, Sensitive) API Key for the Cato API. Can be provided using CATO_BASEURL environment variable.
+- `account_id` (int) Account ID, unique identifier of the account to add resources to. 

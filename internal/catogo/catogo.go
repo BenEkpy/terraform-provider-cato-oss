@@ -1,4 +1,4 @@
-package provider
+package catogo
 
 import (
 	"bytes"
@@ -9,12 +9,12 @@ import (
 	"time"
 )
 
-// Temporary Cato Client, to be externalised
-
 type Client struct {
 	httpclient *http.Client
 	token      string
 	baseurl    string
+	accountId  string
+	tfversion  string
 }
 
 type graphQLRequest struct {
@@ -22,13 +22,20 @@ type graphQLRequest struct {
 	Variables map[string]interface{} `json:"variables,omitempty"`
 }
 
-// to be improve
 type Response struct {
-	Data   interface{}   `json:"data,omitempty"`
+	Data struct {
+		Admin           interface{} `json:"admin,omitempty"`
+		Admins          interface{} `json:"admins,omitempty"`
+		AccountRoles    interface{} `json:"accountRoles,omitempty"`
+		AccountSnapshot interface{} `json:"accountSnapshot,omitempty"`
+		EntityLookup    interface{} `json:"entityLookup,omitempty"`
+		Site            interface{} `json:"site,omitempty"`
+		Policy          interface{} `json:"policy,omitempty"`
+	} `json:"data,omitempty"`
 	Errors []interface{} `json:"errors,omitempty"`
 }
 
-func CatoClient(baseurl string, token string) *Client {
+func CatoClient(baseurl string, token string, accountId string, tfversion string) *Client {
 
 	client := &http.Client{
 		Timeout: 60 * time.Second,
@@ -38,6 +45,8 @@ func CatoClient(baseurl string, token string) *Client {
 		httpclient: client,
 		baseurl:    baseurl,
 		token:      token,
+		accountId:  accountId,
+		tfversion:  tfversion,
 	}
 }
 
@@ -57,6 +66,7 @@ func (c *Client) do(reqBody graphQLRequest) ([]byte, error) {
 
 	req.Header.Set("x-api-key", c.token)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "cato-terraform-"+c.tfversion)
 
 	res, err := c.httpclient.Do(req)
 	if err != nil {
@@ -65,6 +75,10 @@ func (c *Client) do(reqBody graphQLRequest) ([]byte, error) {
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
+
+	if err != nil {
+		return nil, err
+	}
 
 	if res.StatusCode == http.StatusOK {
 
@@ -83,6 +97,24 @@ func (c *Client) do(reqBody graphQLRequest) ([]byte, error) {
 
 	}
 
-	return body, nil
+	return getByteData(body)
+}
 
+// function that extract the value of "data" key in JSON response from API
+func getByteData(body []byte) ([]byte, error) {
+
+	response := Response{}
+	byteData := []byte{}
+
+	err := json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	byteData, err = json.Marshal(response.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return byteData, nil
 }
