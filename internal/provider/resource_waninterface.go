@@ -181,12 +181,41 @@ func (r *wanInterfaceResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
+	var input = catogo.UpdateSocketInterfaceInput{}
 	if siteExists {
-		input := catogo.UpdateSocketInterfaceInput{
-			DestType: "INTERFACE_DISABLED",
+
+		// Check if there is only one WAN interface & rewrite the input with default one
+		wanInterfaceList, err := r.client.GetSocketWanInterfacelist(state.SiteId.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Unable to connect or request the Cato API",
+				err.Error(),
+			)
+			return
 		}
 
-		_, err := r.client.UpdateSocketInterface(state.SiteId.ValueString(), state.InterfaceID.ValueString(), input)
+		if len(wanInterfaceList) == 1 {
+			defaultName := "Default WAN Interface"
+			input = catogo.UpdateSocketInterfaceInput{
+				DestType: "CATO",
+				Name:     &defaultName,
+				Bandwidth: &catogo.SocketInterfaceBandwidthInput{
+					UpstreamBandwidth:   10,
+					DownstreamBandwidth: 10,
+				},
+				Wan: &catogo.SocketInterfaceWanInput{
+					Role:       "wan_1",
+					Precedence: "ACTIVE",
+				},
+			}
+		} else {
+			// Disabled interface to "remove" an interface
+			input = catogo.UpdateSocketInterfaceInput{
+				DestType: "INTERFACE_DISABLED",
+			}
+		}
+
+		_, err = r.client.UpdateSocketInterface(state.SiteId.ValueString(), state.InterfaceID.ValueString(), input)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Unable to connect or request the Cato API",

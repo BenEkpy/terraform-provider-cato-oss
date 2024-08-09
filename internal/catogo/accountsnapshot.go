@@ -565,5 +565,64 @@ func (c *Client) AccountSnapshotSiteById(siteId string) (*SiteSnapshot, error) {
 	} else {
 		return &response.AccountSnapshot.Sites[0], nil
 	}
+}
 
+func (c *Client) GetSocketWanInterfacelist(siteId string) ([]InterfaceInfo, error) {
+
+	query := graphQLRequest{
+		Query: `
+		query accountSnapshot($accountId: ID!, $siteId: [ID!]) {
+			accountSnapshot(accountID: $accountId) {
+				id
+				sites(siteIDs: $siteId) {
+				id
+				info {
+					interfaces {
+						destType
+						downstreamBandwidth
+						id
+						name
+						upstreamBandwidth
+					}
+				}
+				}
+				timestamp
+			}
+		}`,
+		Variables: map[string]interface{}{
+			"accountId": c.accountId,
+			"siteId":    []string{siteId},
+		},
+	}
+
+	body, err := c.do(query)
+	if err != nil {
+		return nil, err
+	}
+
+	var response struct{ AccountSnapshot AccountSnapshot }
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.AccountSnapshot.Sites == nil {
+
+		return nil, fmt.Errorf("Site " + siteId + " doesn't exists")
+
+	} else {
+
+		var interfaceList []InterfaceInfo
+
+		// retrieve only interface that have DestType as CATO
+		for _, item := range response.AccountSnapshot.Sites[0].Info.Interfaces {
+
+			if *item.DestType == "CATO" {
+				interfaceList = append(interfaceList, item)
+			}
+		}
+
+		return interfaceList, nil
+	}
 }
