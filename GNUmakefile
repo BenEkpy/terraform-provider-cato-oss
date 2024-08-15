@@ -3,8 +3,7 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=terraform-providers
 PKG_NAME=cato-oss
 BINARY=terraform-provider-${PKG_NAME}
-# Whenever bumping provider version, please update the version in cato/client.go (line 27) as well.
-VERSION=0.2.0
+VERSION=0.2.2
 
 # Mac Intel Chip
 # OS_ARCH=darwin_amd64
