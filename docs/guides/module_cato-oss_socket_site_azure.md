@@ -5,7 +5,7 @@ description: |-
   Provides an combined example of creating a virtual socket site in Cato Management Application, and templates for creating an Resource Group with underlying network resources and deploying a virtual socket instance in Azure.
 ---
 
-# cato-oss_socket_site (Example Azure Module)
+# Example Azure Module (cato-oss_socket_site)
 
 The `cato-oss_socket_site` resource contains the configuration parameters necessary to 
 add a socket site to the Cato cloud 

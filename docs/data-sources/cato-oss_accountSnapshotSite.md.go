@@ -1,8 +1,8 @@
 ---
-page_title: "cato-oss_socket_site AWS Module"
+page_title: "cato-oss_oss_accountSnapshotSite - Data Source"
 subcategory: "Provider Reference"
 description: |-
-Provides a cato-oss_accountSnapshotSite data source
+  Provides a cato-oss_accountSnapshotSite data source
 ---
 
 # cato-oss_accountSnapshotSite (Resource)

@@ -5,7 +5,7 @@ description: |-
   Provides an combined example of creating a virtual socket site in Cato Management Application, and templates for creating a VPC and deploying a virtual socket instance in AWS.
 ---
 
-# cato-oss_socket_site (Example AWS Module)
+# Example AWS Module (cato-oss_socket_site)
 
 The `cato-oss_socket_site` resource contains the configuration parameters necessary to 
 add a socket site to the Cato cloud 
