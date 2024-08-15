@@ -74,7 +74,7 @@ variable "lan_eni_ip" {
 
 ### cato-oss_socket Resource
 
-```
+```hcl
 ## cato-oss_socket Provider and Resource
 
 provider "cato-oss" {

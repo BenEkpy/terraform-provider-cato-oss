@@ -21,8 +21,8 @@ Use the navigation to the left to read about the available resources.
 terraform {
   required_providers {
     cato-oss = {
-      source = "registry.terraform.io/benekpy/cato-oss"
-      version = "~> 0.2.0"
+      source = "benekpy/cato-oss"
+      version = "~> 0.2.2"
     }
   }
 }

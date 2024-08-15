@@ -73,7 +73,7 @@ variable "lan_eni_ip" {
 
 ### cato-oss_socket Resource
 
-```
+```hcl
 ## cato-oss_socket Provider and Resource
 
 provider "cato-oss" {
@@ -88,7 +88,7 @@ resource "cato-oss_socket_site" "aws-site" {
     name = var.project_name
 	native_range = {
       native_network_range = var.vpc_range
-      local_ip = var.new_lan_eni
+      local_ip = var.lan_eni_ip
     }
     site_location = {
         country_code = "US"
@@ -353,21 +353,21 @@ resource "aws_eip_association" "mgmteip_assoc" {
 
 // Routing Tables
 resource "aws_route_table" "wanrt" {
-  vpc_id = var.vpc_id
+  vpc_id = aws_vpc.cato-lab.id
   tags = {
     Name = "${var.project_name}-WAN-RT"
   }
 }
 
 resource "aws_route_table" "mgmtrt" {
-  vpc_id = var.vpc_id
+  vpc_id = aws_vpc.cato-lab.id
   tags = {
     Name = "${var.project_name}-MGMT-RT"
   }
 }
 
 resource "aws_route_table" "lanrt" {
-  vpc_id = var.vpc_id
+  vpc_id = aws_vpc.cato-lab.id
   tags = {
     Name = "${var.project_name}-LAN-RT"
   }
