@@ -1,5 +1,5 @@
 ---
-page_title: "cato-oss__accountSnapshotSite Data Source - terraform-provider-cato-oss"
+page_title: "cato-oss_socket_site AWS Module"
 subcategory: "Provider Reference"
 description: |-
 Provides a cato-oss_accountSnapshotSite data source
