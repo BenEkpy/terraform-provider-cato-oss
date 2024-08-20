@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -51,13 +52,13 @@ func CatoClient(baseurl string, token string, accountId string, tfversion string
 }
 
 func (c *Client) do(reqBody graphQLRequest) ([]byte, error) {
-
 	var respBody Response
 
 	jsonReqBody, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("[DEBUG] API Request: %s\n", string(jsonReqBody))
 
 	req, err := http.NewRequest("POST", c.baseurl, bytes.NewBuffer(jsonReqBody))
 	if err != nil {
@@ -75,26 +76,22 @@ func (c *Client) do(reqBody graphQLRequest) ([]byte, error) {
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
-
 	if err != nil {
 		return nil, err
 	}
 
+	log.Printf("[DEBUG] API Response: %s\n", string(body))
 	if res.StatusCode == http.StatusOK {
-
 		err = json.Unmarshal(body, &respBody)
 		if err != nil {
 			return nil, err
 		}
-
 		if respBody.Errors != nil {
 			json_error, _ := json.Marshal(respBody.Errors)
 			return nil, fmt.Errorf(string(json_error))
 		}
-
 	} else {
 		return nil, fmt.Errorf("unknown error - " + http.StatusText(res.StatusCode))
-
 	}
 
 	return getByteData(body)
