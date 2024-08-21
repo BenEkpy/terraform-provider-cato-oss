@@ -74,7 +74,8 @@ func (d *staticHostResource) Configure(_ context.Context, req resource.Configure
 		return
 	}
 
-	d.client = req.ProviderData.(*catogo.Client)
+	confData := req.ProviderData.(*catoClientData)
+	d.client = confData.catogo
 }
 
 func (r *staticHostResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

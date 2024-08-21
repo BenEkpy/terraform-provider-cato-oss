@@ -227,7 +227,8 @@ func (d *accountSnapshotSiteDataSource) Configure(_ context.Context, req datasou
 		return
 	}
 
-	d.client = req.ProviderData.(*catogo.Client)
+	confData := req.ProviderData.(*catoClientData)
+	d.client = confData.catogo
 }
 
 func (d *accountSnapshotSiteDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

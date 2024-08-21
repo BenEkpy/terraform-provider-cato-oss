@@ -55,7 +55,8 @@ func (d *AccountRoleDataSource) Configure(_ context.Context, req datasource.Conf
 		return
 	}
 
-	d.client = req.ProviderData.(*catogo.Client)
+	confData := req.ProviderData.(*catoClientData)
+	d.client = confData.catogo
 }
 
 func (d *AccountRoleDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
