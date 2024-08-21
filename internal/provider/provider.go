@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"net/http"
 	"os"
 
 	"github.com/BenEkpy/terraform-provider-cato-oss/internal/catogo"
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	cato "github.com/routebyintuition/cato-go-sdk"
 )
 
 var (
@@ -33,6 +35,15 @@ type catoProviderModel struct {
 	BaseURL   types.String `tfsdk:"baseurl"`
 	Token     types.String `tfsdk:"token"`
 	AccountId types.String `tfsdk:"account_id"`
+}
+
+// added by JF to support use of two different clients (long story....)
+type catoClientData struct {
+	BaseURL   string
+	Token     string
+	AccountId string
+	catogo    *catogo.Client
+	catov2    *cato.Client
 }
 
 func (p *catoProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -130,16 +141,29 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		return
 	}
 
+	// packaged client
 	client := catogo.CatoClient(baseurl, token, accountId, p.version)
 
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	// newer client:
+	catoClient, _ := cato.New(baseurl, token, *http.DefaultClient)
+
+	dataSourceData := &catoClientData{
+		BaseURL:   baseurl,
+		Token:     token,
+		AccountId: accountId,
+		catogo:    client,
+		catov2:    catoClient,
+	}
+
+	resp.DataSourceData = dataSourceData
+	resp.ResourceData = dataSourceData
 
 }
 
 func (p *catoProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewAccountSnapshotSiteDataSource,
+		NewInternetFwPolicyDataSource,
 	}
 }
 
@@ -148,6 +172,7 @@ func (p *catoProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewSocketSiteResource,
 		NewWanInterfaceResource,
 		NewAdminResource,
+		NewInternetFwPolicyResource,
 		NewStaticHostResource,
 		NewNetworkRangeResource,
 	}
