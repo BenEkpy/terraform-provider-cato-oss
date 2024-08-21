@@ -25,17 +25,6 @@ type internetFwPolicyResource struct {
 	info *catoClientData
 }
 
-type internetFwPolicy struct {
-	Enabled types.Bool                      `tfsdk:"enabled"`
-	Rules   []InternetFirewall_Policy_Rules `tfsdk:"rules"`
-	// change rules type
-	Sections []InternetFirewall_Policy_Sections `tfsdk:"sections"`
-	// change rules type
-	Audit InternetFirewall_Policy_Audit `tfsdk:"audit"`
-	// change rules type
-	Revision InternetFirewall_Policy_Revision `tfsdk:"revision"`
-}
-
 type InternetFirewallRuleModel struct {
 	Name  types.String `tfsdk:"name"`
 	Id    types.String `tfsdk:"id"`
@@ -454,7 +443,8 @@ func (r *internetFwPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 			//},
 			"at": schema.SingleNestedAttribute{
 				Description: "at",
-				Required:    true,
+				Required:    false,
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"position": schema.StringAttribute{
 						Description: "position",
@@ -670,16 +660,6 @@ func (r *internetFwPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 								Optional: true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Description: "id",
-											Required:    false,
-											Optional:    true,
-										},
-										"name": schema.StringAttribute{
-											Description: "name",
-											Required:    false,
-											Optional:    true,
-										},
 										"by": schema.StringAttribute{
 											Description: "by",
 											Required:    false,
@@ -858,16 +838,6 @@ func (d *internetFwPolicyResource) Configure(_ context.Context, req resource.Con
 
 }
 
-/*
-func makeListSliceResult(src types.List) []string {
-	ctx := context.Background()
-	elements := make([]string, 0, len(src.Elements()))
-	src.ElementsAs(ctx, &elements, false)
-
-	return elements
-}
-*/
-
 func makeStringSliceFromStringList(src []types.String) []string {
 	res := []string{}
 
@@ -918,7 +888,7 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 	for _, val := range plan.Rule.Source.Site {
 		siteSourceRefInput = append(siteSourceRefInput, &cato_models.SiteRefInput{
 			By:    cato_models.ObjectRefBy(val.By.ValueString()),
-			Input: val.Name.ValueString(),
+			Input: val.Input.ValueString(),
 		})
 	}
 
@@ -1176,19 +1146,30 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 
 	b, _ := json.Marshal(input)
 
+	tflog.Info(ctx, "initial create input")
 	tflog.Info(ctx, string(b))
 
 	policyChange, err := r.info.catov2.PolicyInternetFirewallAddRule(ctx, input, r.info.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Catov2 API error",
+			"Catov2 API PolicyInternetFirewallAddRule error",
 			err.Error(),
 		)
 		return
 	}
 
-	policyChangeJson, _ := json.Marshal(policyChange)
+	tflog.Info(ctx, "after PolicyInternetFirewallAddRule")
 
+	policyChangeJson, err := json.Marshal(policyChange)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Catov2 API json.Marshal(policyChange) error",
+			err.Error(),
+		)
+		return
+	}
+
+	tflog.Info(ctx, "policyChangeJson: ")
 	tflog.Info(ctx, string(policyChangeJson))
 
 	plan.Rule.ID = types.StringValue(policyChange.GetPolicy().GetInternetFirewall().GetAddRule().Rule.GetRule().ID)
@@ -1196,6 +1177,7 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 	tflog.Info(ctx, fmt.Sprintf("Set Value plan.ID: %s", plan.Rule.ID))
 
 	if plan.Publish.ValueBool() {
+		tflog.Info(ctx, "publishing new rule")
 		publishDataIfEnabled := &cato_models.PolicyPublishRevisionInput{
 			Name: plan.SdkKeyName.ValueStringPointer(),
 		}
@@ -1207,6 +1189,8 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 			)
 			return
 		}
+	} else {
+		tflog.Info(ctx, "NOT publishing new rule")
 	}
 
 	diags = resp.State.Set(ctx, plan)
@@ -1243,9 +1227,7 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 	ruleList := body.GetPolicy().InternetFirewall.Policy.GetRules()
 	for _, ruleListItem := range ruleList {
 		if ruleListItem.GetRule().ID == state.Rule.ID.ValueString() {
-			// TODO: Enabled
 
-			// fmt.Println("matching rule found: ", ruleListItem.GetRule().ID)
 			state.Rule.ID = types.StringValue(ruleListItem.GetRule().ID)
 			state.Rule.Action = types.StringValue(ruleListItem.Rule.Action.String())
 			state.Rule.ConnectionOrigin = types.StringValue(ruleListItem.Rule.ConnectionOrigin.String())
@@ -1254,8 +1236,8 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 			countryRuleItem := []Policy_Policy_InternetFirewall_Policy_Rules_Rule_Country{}
 			for _, val := range ruleListItem.Rule.GetCountry() {
 				countryRuleItem = append(countryRuleItem, Policy_Policy_InternetFirewall_Policy_Rules_Rule_Country{
-					ID:   types.StringValue(val.ID),
-					Name: types.StringValue(val.Name),
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
 				})
 			}
 			state.Rule.Country = countryRuleItem
@@ -1265,8 +1247,8 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 			dstAppCategory := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_AppCategory{}
 			for _, val := range ruleListItem.Rule.Destination.AppCategory {
 				dstAppCategory = append(dstAppCategory, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_AppCategory{
-					ID:   types.StringValue(val.ID),
-					Name: types.StringValue(val.Name),
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.GetName()),
 				})
 			}
 			state.Rule.Destination.AppCategory = dstAppCategory
@@ -1274,8 +1256,8 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 			dstApplication := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Application{}
 			for _, val := range ruleListItem.Rule.Destination.Application {
 				dstApplication = append(dstApplication, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Application{
-					ID:   types.StringValue(val.ID),
-					Name: types.StringValue(val.Name),
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
 				})
 			}
 			state.Rule.Destination.Application = dstApplication
@@ -1283,8 +1265,8 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 			dstCountry := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Country{}
 			for _, val := range ruleListItem.Rule.Destination.Country {
 				dstCountry = append(dstCountry, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Country{
-					ID:   types.StringValue(val.ID),
-					Name: types.StringValue(val.Name),
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
 				})
 			}
 			state.Rule.Destination.Country = dstCountry
@@ -1292,8 +1274,8 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 			dstCustomApp := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomApp{}
 			for _, val := range ruleListItem.Rule.Destination.CustomApp {
 				dstCustomApp = append(dstCustomApp, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomApp{
-					ID:   types.StringValue(val.ID),
-					Name: types.StringValue(val.Name),
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
 				})
 			}
 			state.Rule.Destination.CustomApp = dstCustomApp
@@ -1301,8 +1283,8 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 			dstCustomCategory := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomCategory{}
 			for _, val := range ruleListItem.Rule.Destination.CustomCategory {
 				dstCustomCategory = append(dstCustomCategory, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomCategory{
-					ID:   types.StringValue(val.ID),
-					Name: types.StringValue(val.Name),
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
 				})
 			}
 			state.Rule.Destination.CustomCategory = dstCustomCategory
@@ -1322,8 +1304,8 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 			dstGlobalRange := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_GlobalIPRange{}
 			for _, val := range ruleListItem.Rule.Destination.GlobalIPRange {
 				dstGlobalRange = append(dstGlobalRange, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_GlobalIPRange{
-					ID:   types.StringValue(val.ID),
-					Name: types.StringValue(val.Name),
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
 				})
 			}
 			state.Rule.Destination.GlobalIPRange = dstGlobalRange
@@ -1352,8 +1334,8 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 			dstSanctionedAppsCategory := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_SanctionedAppsCategory{}
 			for _, val := range ruleListItem.Rule.Destination.SanctionedAppsCategory {
 				dstSanctionedAppsCategory = append(dstSanctionedAppsCategory, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_SanctionedAppsCategory{
-					ID:   types.StringValue(val.ID),
-					Name: types.StringValue(val.Name),
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
 				})
 			}
 			state.Rule.Destination.SanctionedAppsCategory = dstSanctionedAppsCategory
@@ -1367,8 +1349,8 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 			deviceList := []Policy_Policy_InternetFirewall_Policy_Rules_Rule_Device{}
 			for _, val := range ruleListItem.Rule.Device {
 				deviceList = append(deviceList, Policy_Policy_InternetFirewall_Policy_Rules_Rule_Device{
-					ID:   types.StringValue(val.ID),
-					Name: types.StringValue(val.Name),
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
 				})
 			}
 			state.Rule.Device = deviceList
@@ -1407,14 +1389,477 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 
 func (r *internetFwPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 
-	var plan internetFwPolicy
+	var plan InternetFirewallCreateRuleInput
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// fmt.Println("TODO: BuildUpate")
+	mutationInput := &cato_models.InternetFirewallPolicyMutationInput{}
+
+	hostSourceRefInput := []*cato_models.HostRefInput{}
+	for _, val := range plan.Rule.Source.Host {
+		hostSourceRefInput = append(hostSourceRefInput, &cato_models.HostRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	siteSourceRefInput := []*cato_models.SiteRefInput{}
+	for _, val := range plan.Rule.Source.Site {
+		siteSourceRefInput = append(siteSourceRefInput, &cato_models.SiteRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Name.ValueString(),
+		})
+	}
+
+	ipSourcerange := []*cato_models.IPAddressRangeInput{}
+	for _, val := range plan.Rule.Source.IPRange {
+		ipSourcerange = append(ipSourcerange, &cato_models.IPAddressRangeInput{
+			From: val.From.ValueString(),
+			To:   val.To.ValueString(),
+		})
+	}
+
+	globalSourceIpRange := []*cato_models.GlobalIPRangeRefInput{}
+	for _, val := range plan.Rule.Source.GlobalIPRange {
+		globalSourceIpRange = append(globalSourceIpRange, &cato_models.GlobalIPRangeRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	networkSourceInterfaceRefInput := []*cato_models.NetworkInterfaceRefInput{}
+	for _, val := range plan.Rule.Source.NetworkInterface {
+		networkSourceInterfaceRefInput = append(networkSourceInterfaceRefInput, &cato_models.NetworkInterfaceRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	siteSourceNetworkSubnetRefInput := []*cato_models.SiteNetworkSubnetRefInput{}
+	for _, val := range plan.Rule.Source.SiteNetworkSubnet {
+		siteSourceNetworkSubnetRefInput = append(siteSourceNetworkSubnetRefInput, &cato_models.SiteNetworkSubnetRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	floatingSourceSubnetRefInput := []*cato_models.FloatingSubnetRefInput{}
+	for _, val := range plan.Rule.Source.FloatingSubnet {
+		floatingSourceSubnetRefInput = append(floatingSourceSubnetRefInput, &cato_models.FloatingSubnetRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	userSourceRefInput := []*cato_models.UserRefInput{}
+	for _, val := range plan.Rule.Source.User {
+		userSourceRefInput = append(userSourceRefInput, &cato_models.UserRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	usersSourceGroupRefInput := []*cato_models.UsersGroupRefInput{}
+	for _, val := range plan.Rule.Source.UsersGroup {
+		usersSourceGroupRefInput = append(usersSourceGroupRefInput, &cato_models.UsersGroupRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	groupSourceRefInput := []*cato_models.GroupRefInput{}
+	for _, val := range plan.Rule.Source.Group {
+		groupSourceRefInput = append(groupSourceRefInput, &cato_models.GroupRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	systemSouceGroupRefInput := []*cato_models.SystemGroupRefInput{}
+	for _, val := range plan.Rule.Source.Group {
+		systemSouceGroupRefInput = append(systemSouceGroupRefInput, &cato_models.SystemGroupRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	countryInput := []*cato_models.CountryRefInput{}
+	for _, val := range plan.Rule.Country {
+		countryInput = append(countryInput, &cato_models.CountryRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	countryDestInput := []*cato_models.CountryRefInput{}
+	for _, val := range plan.Rule.Destination.Country {
+		countryInput = append(countryInput, &cato_models.CountryRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	connectionOrigin := cato_models.ConnectionOriginEnum(plan.Rule.ConnectionOrigin.ValueString())
+	actionEnum := cato_models.InternetFirewallActionEnum(plan.Rule.Action.ValueString())
+
+	domainDestList := makeStringSliceFromStringList(plan.Rule.Destination.Domain)
+	fqdnDestList := makeStringSliceFromStringList(plan.Rule.Destination.Fqdn)
+	subnetSourceRefInput := makeStringSliceFromStringList(plan.Rule.Source.Subnet)
+
+	deviceInput := []*cato_models.DeviceProfileRefInput{}
+	for _, val := range plan.Rule.Device {
+		deviceInput = append(deviceInput, &cato_models.DeviceProfileRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	deviceOsInput := []cato_models.OperatingSystem{}
+	for _, val := range plan.Rule.Device {
+		deviceOsInput = append(deviceOsInput, cato_models.OperatingSystem(val.ID.ValueString()))
+	}
+
+	ipDestRange := []*cato_models.IPAddressRangeInput{}
+	for _, val := range plan.Rule.Destination.IPRange {
+		ipDestRange = append(ipDestRange, &cato_models.IPAddressRangeInput{
+			From: val.From.ValueString(),
+			To:   val.To.ValueString(),
+		})
+	}
+
+	globalDestIpRange := []*cato_models.GlobalIPRangeRefInput{}
+	for _, val := range plan.Rule.Destination.GlobalIPRange {
+		globalDestIpRange = append(globalDestIpRange, &cato_models.GlobalIPRangeRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	applicationDestInput := []*cato_models.ApplicationRefInput{}
+	for _, val := range plan.Rule.Destination.Application {
+		applicationDestInput = append(applicationDestInput, &cato_models.ApplicationRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	customAppDestInput := []*cato_models.CustomApplicationRefInput{}
+	for _, val := range plan.Rule.Destination.Application {
+		customAppDestInput = append(customAppDestInput, &cato_models.CustomApplicationRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	appDestCategoryInput := []*cato_models.ApplicationCategoryRefInput{}
+	for _, val := range plan.Rule.Destination.AppCategory {
+		appDestCategoryInput = append(appDestCategoryInput, &cato_models.ApplicationCategoryRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	customDestCategory := []*cato_models.CustomCategoryRefInput{}
+	for _, val := range plan.Rule.Destination.Application {
+		customDestCategory = append(customDestCategory, &cato_models.CustomCategoryRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	sanctionedDestAppsCategory := []*cato_models.SanctionedAppsCategoryRefInput{}
+	for _, val := range plan.Rule.Destination.Application {
+		sanctionedDestAppsCategory = append(sanctionedDestAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	serviceInput := &cato_models.InternetFirewallServiceTypeUpdateInput{}
+
+	ruleTrackingAlertSubscriptionGroup := []*cato_models.SubscriptionGroupRefInput{}
+	for _, val := range plan.Rule.Destination.Application {
+		ruleTrackingAlertSubscriptionGroup = append(ruleTrackingAlertSubscriptionGroup, &cato_models.SubscriptionGroupRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	ruleTrackingAlertMailingList := []*cato_models.SubscriptionMailingListRefInput{}
+	for _, val := range plan.Rule.Destination.Application {
+		ruleTrackingAlertMailingList = append(ruleTrackingAlertMailingList, &cato_models.SubscriptionMailingListRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	ruleTrackingAlertSubscriptionWebhook := []*cato_models.SubscriptionWebhookRefInput{}
+	for _, val := range plan.Rule.Destination.Application {
+		ruleTrackingAlertSubscriptionWebhook = append(ruleTrackingAlertSubscriptionWebhook, &cato_models.SubscriptionWebhookRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
+	}
+
+	activeOnUpdate := cato_models.PolicyActiveOnEnum(plan.Rule.Schedule.ActiveOn.ValueString())
+	frequencyUpdate := cato_models.PolicyRuleTrackingFrequencyEnum(plan.Rule.Tracking.Alert.Frequency.ValueString())
+
+	updateInput := cato_models.InternetFirewallUpdateRuleInput{
+		ID: plan.Rule.ID.ValueString(),
+		Rule: &cato_models.InternetFirewallUpdateRuleDataInput{
+			Enabled:     plan.Rule.Enabled.ValueBoolPointer(),
+			Name:        plan.Rule.Name.ValueStringPointer(),
+			Description: plan.Rule.Description.ValueStringPointer(),
+			Source: &cato_models.InternetFirewallSourceUpdateInput{
+				IP:                makeStringSliceFromStringList(plan.Rule.Source.IP),
+				Host:              hostSourceRefInput,
+				Site:              siteSourceRefInput,
+				Subnet:            subnetSourceRefInput,
+				IPRange:           ipSourcerange,
+				GlobalIPRange:     globalSourceIpRange,
+				NetworkInterface:  networkSourceInterfaceRefInput,
+				SiteNetworkSubnet: siteSourceNetworkSubnetRefInput,
+				FloatingSubnet:    floatingSourceSubnetRefInput,
+				User:              userSourceRefInput,
+				UsersGroup:        usersSourceGroupRefInput,
+				Group:             groupSourceRefInput,
+				SystemGroup:       systemSouceGroupRefInput,
+			},
+			ConnectionOrigin: &connectionOrigin,
+			Country:          countryInput,
+			Device:           deviceInput,
+			DeviceOs:         deviceOsInput,
+			Destination: &cato_models.InternetFirewallDestinationUpdateInput{
+				Application:            applicationDestInput,
+				CustomApp:              customAppDestInput,
+				AppCategory:            appDestCategoryInput,
+				CustomCategory:         customDestCategory,
+				SanctionedAppsCategory: sanctionedDestAppsCategory,
+				Country:                countryDestInput,
+				Domain:                 domainDestList,
+				Fqdn:                   fqdnDestList,
+				IP:                     makeStringSliceFromStringList(plan.Rule.Destination.IP),
+				Subnet:                 makeStringSliceFromStringList(plan.Rule.Destination.Subnet),
+				IPRange:                ipDestRange,
+				GlobalIPRange:          globalDestIpRange,
+				RemoteAsn:              makeStringSliceFromStringList(plan.Rule.Destination.RemoteAsn),
+			},
+			Service: serviceInput,
+			Action:  &actionEnum,
+			Schedule: &cato_models.PolicyScheduleUpdateInput{
+				ActiveOn: &activeOnUpdate,
+			},
+			Tracking: &cato_models.PolicyTrackingUpdateInput{
+				Event: &cato_models.PolicyRuleTrackingEventUpdateInput{
+					Enabled: plan.Rule.Tracking.Event.Enabled.ValueBoolPointer(),
+				},
+				Alert: &cato_models.PolicyRuleTrackingAlertUpdateInput{
+					Enabled:           plan.Rule.Tracking.Alert.Enabled.ValueBoolPointer(),
+					Frequency:         &frequencyUpdate,
+					SubscriptionGroup: ruleTrackingAlertSubscriptionGroup,
+					MailingList:       ruleTrackingAlertMailingList,
+					Webhook:           ruleTrackingAlertSubscriptionWebhook,
+				},
+			},
+		},
+	}
+
+	policyChange, err := r.info.catov2.PolicyInternetFirewallUpdateRule(ctx, mutationInput, updateInput, r.info.AccountId)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Catov2 API PolicyInternetFirewallUpdateRule error",
+			err.Error(),
+		)
+		return
+	}
+
+	plan.Rule.ID = types.StringValue(policyChange.GetPolicy().GetInternetFirewall().GetUpdateRule().Rule.GetRule().ID)
+
+	tflog.Info(ctx, plan.Rule.ID.ValueString())
+
+	if plan.Publish.ValueBool() {
+		publishDataIfEnabled := &cato_models.PolicyPublishRevisionInput{
+			Name: plan.SdkKeyName.ValueStringPointer(),
+		}
+		_, err := r.info.catov2.PolicyInternetFirewallPublishPolicyRevision(ctx, &cato_models.InternetFirewallPolicyMutationInput{}, publishDataIfEnabled, r.info.AccountId)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Catov2 API PolicyInternetFirewallPublishPolicyRevision error",
+				err.Error(),
+			)
+			return
+		}
+	}
+
+	b, _ := json.Marshal(plan)
+
+	tflog.Info(ctx, string(b))
+
+	// TODO: do a read and then submit plan results
+
+	queryPolicy := &cato_models.InternetFirewallPolicyInput{}
+	queryResult, err := r.info.catov2.Policy(ctx, queryPolicy, r.info.AccountId)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Catov2 API Policy(ctx, queryPolicy, r.info.AccountId) error",
+			err.Error(),
+		)
+		return
+	}
+	ruleList := queryResult.GetPolicy().InternetFirewall.Policy.GetRules()
+	for _, ruleListItem := range ruleList {
+		if ruleListItem.GetRule().ID == plan.Rule.ID.ValueString() {
+			plan.Rule.ID = types.StringValue(ruleListItem.GetRule().ID)
+			plan.Rule.Action = types.StringValue(ruleListItem.Rule.Action.String())
+			plan.Rule.ConnectionOrigin = types.StringValue(ruleListItem.Rule.ConnectionOrigin.String())
+			plan.Rule.Description = types.StringValue(ruleListItem.Rule.GetDescription())
+			plan.Rule.Name = types.StringValue(ruleListItem.GetRule().Name)
+			countryRuleItem := []Policy_Policy_InternetFirewall_Policy_Rules_Rule_Country{}
+			for _, val := range ruleListItem.Rule.GetCountry() {
+				countryRuleItem = append(countryRuleItem, Policy_Policy_InternetFirewall_Policy_Rules_Rule_Country{
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
+				})
+			}
+			plan.Rule.Country = countryRuleItem
+
+			plan.Rule.Destination = Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination{}
+
+			dstAppCategory := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_AppCategory{}
+			for _, val := range ruleListItem.Rule.Destination.AppCategory {
+				dstAppCategory = append(dstAppCategory, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_AppCategory{
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
+				})
+			}
+			plan.Rule.Destination.AppCategory = dstAppCategory
+
+			dstApplication := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Application{}
+			for _, val := range ruleListItem.Rule.Destination.Application {
+				dstApplication = append(dstApplication, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Application{
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
+				})
+			}
+			plan.Rule.Destination.Application = dstApplication
+
+			dstCountry := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Country{}
+			for _, val := range ruleListItem.Rule.Destination.Country {
+				dstCountry = append(dstCountry, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Country{
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
+				})
+			}
+			plan.Rule.Destination.Country = dstCountry
+
+			dstCustomApp := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomApp{}
+			for _, val := range ruleListItem.Rule.Destination.CustomApp {
+				dstCustomApp = append(dstCustomApp, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomApp{
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
+				})
+			}
+			plan.Rule.Destination.CustomApp = dstCustomApp
+
+			dstCustomCategory := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomCategory{}
+			for _, val := range ruleListItem.Rule.Destination.CustomCategory {
+				dstCustomCategory = append(dstCustomCategory, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomCategory{
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
+				})
+			}
+			plan.Rule.Destination.CustomCategory = dstCustomCategory
+
+			dstDomain := []types.String{}
+			for _, val := range ruleListItem.Rule.Destination.Domain {
+				dstDomain = append(dstDomain, types.StringValue(val))
+			}
+			plan.Rule.Destination.Domain = dstDomain
+
+			dstFqdn := []types.String{}
+			for _, val := range ruleListItem.Rule.Destination.Fqdn {
+				dstDomain = append(dstDomain, types.StringValue(val))
+			}
+			plan.Rule.Destination.Fqdn = dstFqdn
+
+			dstGlobalRange := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_GlobalIPRange{}
+			for _, val := range ruleListItem.Rule.Destination.GlobalIPRange {
+				dstGlobalRange = append(dstGlobalRange, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_GlobalIPRange{
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
+				})
+			}
+			plan.Rule.Destination.GlobalIPRange = dstGlobalRange
+
+			dstIp := []types.String{}
+			for _, val := range ruleListItem.Rule.Destination.IP {
+				dstIp = append(dstIp, types.StringValue(val))
+			}
+			plan.Rule.Destination.IP = dstIp
+
+			dstIPRange := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_IPRange{}
+			for _, val := range ruleListItem.Rule.Destination.IPRange {
+				dstIPRange = append(dstIPRange, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_IPRange{
+					From: types.StringValue(val.From),
+					To:   types.StringValue(val.To),
+				})
+			}
+			plan.Rule.Destination.IPRange = dstIPRange
+
+			dstRemoteAsn := []types.String{}
+			for _, val := range ruleListItem.Rule.Destination.RemoteAsn {
+				dstRemoteAsn = append(dstRemoteAsn, types.StringValue(val))
+			}
+			plan.Rule.Destination.RemoteAsn = dstRemoteAsn
+
+			dstSanctionedAppsCategory := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_SanctionedAppsCategory{}
+			for _, val := range ruleListItem.Rule.Destination.SanctionedAppsCategory {
+				dstSanctionedAppsCategory = append(dstSanctionedAppsCategory, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_SanctionedAppsCategory{
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
+				})
+			}
+			plan.Rule.Destination.SanctionedAppsCategory = dstSanctionedAppsCategory
+
+			dstSSubnet := []types.String{}
+			for _, val := range ruleListItem.Rule.Destination.Subnet {
+				dstSSubnet = append(dstSSubnet, types.StringValue(val))
+			}
+			plan.Rule.Destination.Subnet = dstSSubnet
+
+			deviceList := []Policy_Policy_InternetFirewall_Policy_Rules_Rule_Device{}
+			for _, val := range ruleListItem.Rule.Device {
+				deviceList = append(deviceList, Policy_Policy_InternetFirewall_Policy_Rules_Rule_Device{
+					By:    types.StringValue("NAME"),
+					Input: types.StringValue(val.Name),
+				})
+			}
+			plan.Rule.Device = deviceList
+
+			deviceOSList := []types.String{}
+			for _, val := range ruleListItem.Rule.DeviceOs {
+				deviceOSList = append(deviceOSList, types.StringValue(string(val)))
+			}
+			plan.Rule.DeviceOs = deviceOSList
+
+			exceptionsList := []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Exceptions{}
+			for _, val := range ruleListItem.Rule.Exceptions {
+				exceptionsList = append(exceptionsList, &Policy_Policy_InternetFirewall_Policy_Rules_Rule_Exceptions{
+					Name:             types.StringValue(val.Name),
+					Source:           Policy_Policy_InternetFirewall_Policy_Rules_Rule_Exceptions_Source{},
+					DeviceOs:         []OperatingSystem{},
+					Country:          []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Exceptions_Country{},
+					Device:           []*Policy_Policy_InternetFirewall_Policy_Rules_Rule_Exceptions_Device{},
+					Destination:      Policy_Policy_InternetFirewall_Policy_Rules_Rule_Exceptions_Destination{},
+					ConnectionOrigin: types.StringValue(""),
+				})
+			}
+			plan.Rule.Exceptions = exceptionsList
+		}
+	}
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)

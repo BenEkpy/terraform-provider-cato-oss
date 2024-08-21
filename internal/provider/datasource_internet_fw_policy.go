@@ -703,8 +703,20 @@ func (d *InternetFwPolicyDataSource) Schema(_ context.Context, _ datasource.Sche
 	}
 }
 
+type internetFwPolicyList struct {
+	ID      types.String                    "tfsdk:\"id\" graphql:\"id\""
+	Enabled types.Bool                      `tfsdk:"enabled"`
+	Rules   []InternetFirewall_Policy_Rules `tfsdk:"rules"`
+	// change rules type
+	Sections []InternetFirewall_Policy_Sections `tfsdk:"sections"`
+	// change rules type
+	Audit InternetFirewall_Policy_Audit `tfsdk:"audit"`
+	// change rules type
+	Revision InternetFirewall_Policy_Revision `tfsdk:"revision"`
+}
+
 func (d *InternetFwPolicyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state internetFwPolicy
+	var state internetFwPolicyList
 
 	queryPolicy := &cato_models.InternetFirewallPolicyInput{}
 	body, err := d.client.catov2.Policy(ctx, queryPolicy, d.client.AccountId)
