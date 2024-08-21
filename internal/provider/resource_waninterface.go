@@ -81,7 +81,8 @@ func (d *wanInterfaceResource) Configure(_ context.Context, req resource.Configu
 		return
 	}
 
-	d.client = req.ProviderData.(*catogo.Client)
+	confData := req.ProviderData.(*catoClientData)
+	d.client = confData.catogo
 }
 
 func (r *wanInterfaceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

@@ -28,7 +28,7 @@ ip,name,mac_address
 
 ## Example Variables for Bulk Import
 
-```hcl
+```
 # DSFHUB Provider Required Variables
 variable "site_id" {
     description = "Site ID"

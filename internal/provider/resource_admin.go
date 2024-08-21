@@ -144,7 +144,8 @@ func (d *adminResource) Configure(_ context.Context, req resource.ConfigureReque
 		return
 	}
 
-	d.client = req.ProviderData.(*catogo.Client)
+	confData := req.ProviderData.(*catoClientData)
+	d.client = confData.catogo
 }
 
 func (r *adminResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
