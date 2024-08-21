@@ -1876,13 +1876,6 @@ func (r *internetFwPolicyResource) Update(ctx context.Context, req resource.Upda
 		destRemoteAsn = makeStringSliceFromStringList(plan.Rule.Destination.RemoteAsn)
 	}
 
-	for _, val := range state.Rule.Source.IP {
-		tflog.Info(ctx, fmt.Sprintf("STATE_SOURCE_IP: [%s]", val.ValueString()))
-	}
-	for _, val := range plan.Rule.Source.IP {
-		tflog.Info(ctx, fmt.Sprintf("PLAN_SOURCE_IP: [%s]", val.ValueString()))
-	}
-
 	updateInput := cato_models.InternetFirewallUpdateRuleInput{
 		ID: state.Rule.ID.ValueString(),
 		Rule: &cato_models.InternetFirewallUpdateRuleDataInput{
