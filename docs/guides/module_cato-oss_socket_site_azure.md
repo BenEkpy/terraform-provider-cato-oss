@@ -375,7 +375,7 @@ terraform {
   required_version = ">= 0.13"
 }
 
-## Vsocket Module Varibables
+## vSocket Module Varibables
 variable cato_token {}
 
 variable "account_id" {
@@ -419,7 +419,7 @@ variable "lan_ip" {
 	default = null
 }
 
-## Vsocket Params
+## vSocket Params
 variable "assetprefix" {
   type = string
   description = "Your asset prefix for resources created"
@@ -459,7 +459,7 @@ variable "image_reference_id" {
 	default = "/Subscriptions/38b5ec1d-b3b6-4f50-a34e-f04a67121955/Providers/Microsoft.Compute/Locations/eastus/Publishers/catonetworks/ArtifactTypes/VMImage/Offers/cato_socket/Skus/public-cato-socket/Versions/19.0.17805"
 }
 
-## Vsocket Module Variables
+## vSocket Module Variables
 provider "azurerm" {
 	features {}
 }
@@ -490,8 +490,8 @@ data "cato-oss_accountSnapshotSite" "azure-site" {
 	id = cato-oss_socket_site.azure-site.id
 }
 
-## Create Vsocket Virtual Machine
-resource "azurerm_virtual_machine" "vsocket" {
+## Create vSocket Virtual Machine
+resource "azurerm_virtual_machine" "vSocket" {
   location                     = var.location
   name                         = "${var.assetprefix}-vSocket"
   network_interface_ids        = [var.mgmt-nic-id, var.wan-nic-id, var.lan-nic-id]
@@ -539,26 +539,164 @@ variable "commands" {
    ]
 }
 
-resource "azurerm_virtual_machine_extension" "vsocket-custom-script" {
+resource "azurerm_virtual_machine_extension" "vSocket-custom-script" {
   auto_upgrade_minor_version = true
-  name                       = "vsocket-custom-script"
+  name                       = "vSocket-custom-script"
   publisher                  = "Microsoft.Azure.Extensions"
   type                       = "CustomScript"
   type_handler_version       = "2.1"
-  virtual_machine_id         = azurerm_virtual_machine.vsocket.id
+  virtual_machine_id         = azurerm_virtual_machine.vSocket.id
   settings = <<SETTINGS
  {
   "commandToExecute": "${"echo '${data.cato-oss_accountSnapshotSite.azure-site.info.sockets[0].serial}' > /cato/serial.txt"};${join(";", var.commands)}"
  }
 SETTINGS
   depends_on = [
-    azurerm_virtual_machine.vsocket
+    azurerm_virtual_machine.vSocket
   ]
 }
 ```
 </details>
 
-### cato-oss_socket VPC and Vsocket Module Usage
+### Create Windows VM - Example Module (optional)
+
+In your current project working folder, a `3-WindowsVM` subfolder, and add a `main.tf` file with the following contents:
+
+<details>
+<summary>Windows VM - Example Module</summary>
+
+### Create Windows VM - Example Module
+
+```hcl
+## Windows VM Module Variables 
+variable "location" { 
+  type = string
+  description = "(Required) The Azure Region where the Resource Group should exist. Changing this forces a new Resource Group to be created."
+  default = null
+}
+
+variable "assetprefix" {
+  type = string
+  description = "Your asset prefix for resources created"
+  default = null
+}
+
+variable "resource-group-name" { 
+  type = string
+  description = "(Required) The Name which should be used for this Resource Group. Changing this forces a new Resource Group to be created."
+  default = null
+}
+
+variable "project_name" {
+  type = string
+  description = "Your Cato Deployment Name Here"
+  default = null
+}
+
+variable "lan_subnet_id" { 
+  type = string
+  description = "(Required) LAN Subnet ID"
+  default = null
+}
+
+variable "admin_username" {
+  type = string
+  description = "Admin Username for the VM"
+  default = null
+}
+
+variable "admin_password" {
+  type = string
+  description = "Admin Password for the VM"
+  default = null
+}
+
+provider "azurerm" {
+	features {}
+}
+
+# Create Network Interfaces
+resource "azurerm_network_interface" "lan-nic" {
+  location            = var.location
+  name                = "${var.assetprefix}-Lan"
+  resource_group_name = var.resource-group-name
+  ip_configuration {
+    name                          = "LanIP"
+    private_ip_address_allocation = "Dynamic"
+    subnet_id                     = var.lan_subnet_id
+  }
+}
+
+# Create a Windows Virtual Machine
+resource "azurerm_virtual_machine" "vm" {
+  name                  = "demo-windows-vm"
+  location              = var.location
+  resource_group_name   = var.resource-group-name
+  network_interface_ids = [azurerm_network_interface.lan-nic.id]
+  vm_size               = "Standard_DS1_v2"
+
+  # Optional: Enable Managed Disks
+  storage_os_disk {
+    name              = "win-osdisk"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+
+  # Use the latest Windows Server 2019 Datacenter image
+  storage_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2019-Datacenter"
+    version   = "latest"
+  }
+
+  os_profile {
+    computer_name  = "demo-windows-vm"
+    admin_username = var.admin_username
+    admin_password = var.admin_password
+  }
+
+  os_profile_windows_config {
+    provision_vm_agent        = true
+    enable_automatic_upgrades = true
+  }
+
+  tags = {
+    environment = "Demo Windows Virtual Machine"
+  }
+}
+
+resource "azurerm_network_security_group" "windows" {
+  name                = "WindowsVMSecurityGroup"
+  location            = var.location
+  resource_group_name = var.resource-group-name
+
+  security_rule {
+    name                       = "Allow-RDP"
+    priority                   = 300
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "*"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  tags = {
+    environment = var.project_name
+  }
+}
+
+resource "azurerm_subnet_network_security_group_association" "windows" {
+  subnet_id                 = var.lan_subnet_id
+  network_security_group_id = azurerm_network_security_group.windows.id
+}
+```
+</details>
+
+### VPC, vSocket, and WindowsVM Module Usage
 
 <details>
 <summary>Project Variables</summary>
@@ -676,7 +814,7 @@ module "vnet" {
   vnet_prefix = var.vnet_prefix
 }
 
-## Create Cato SocketSite and Deploy Vsocket
+## Create Cato SocketSite and Deploy vSocket
 module "vSocket" {
   source = "./2-vSocket"
   cato_token = var.cato_token

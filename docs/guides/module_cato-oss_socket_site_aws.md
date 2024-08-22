@@ -18,99 +18,12 @@ Documentation for the underlying API used in this resource can be found at
 ### Create AWS VPC - Example Module
 
 <details>
-<summary>Socket Site Variables</summary>
+<summary>AWS VPC - Example Module</summary>
 
-### Socket Site Variables
-
-```hcl
-## Cato Provider Variables
-variable cato_token {}
-
-variable "account_id" {
-  description = "Account ID"
-  type        = number
-  default	  = null
-}
-
-## Cato socket site variables
-variable "site_description" {
-  type = string
-  description = "Site description"
-}
-
-variable "project_name" {
-  type = string
-  description = "Your Cato Deployment Name Here"
-  default = "Your Cato Deployment Name Here"
-}
-
-variable "vpc_range" {
-  type = string
-  description = <<EOT
-  	Choose a unique range for your new VPC that does not conflict with the rest of your Wide Area Network.
-    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
-	EOT
-}
-
-variable "site_type" {
-  description = "The type of the site"
-  type        = string
-  default	 = "DATACENTER"
-  validation {
-    condition = contains(["DATACENTER","BRANCH","CLOUD_DC","HEADQUARTERS"], var.site_type)
-    error_message = "The site_type variable must be one of 'DATACENTER','BRANCH','CLOUD_DC','HEADQUARTERS'."
-  }
-}
-
-variable "lan_eni_ip" {
-   description = "Choose an IP Address within the LAN Subnet. You CANNOT use the first four assignable IP addresses within the subnet as it's reserved for the AWS virtual router interface. The accepted input format is X.X.X.X"
-   type        = string
-   default	  = null
-}
-
-```
-</details>
-
-### cato-oss_socket Resource
+In your current project working folder, a `1-vpc` subfolder, and add a `main.tf` file with the following contents:
 
 ```hcl
-## cato-oss_socket Provider and Resource
-
-provider "cato-oss" {
-    baseurl = "https://api.catonetworks.com/api/v1/graphql2"
-    token = var.cato_token
-    account_id = var.account_id
-}
-
-resource "cato-oss_socket_site" "aws-site" {
-    connection_type  = "SOCKET_AWS1500"
-    description = var.site_description
-    name = var.project_name
-	native_range = {
-      native_network_range = var.vpc_range
-      local_ip = var.lan_eni_ip
-    }
-    site_location = {
-        country_code = "US"
-		state_code = "US-VA"
-        timezone = "America/New_York"
-    }
-    site_type = var.site_type
-}
-
-## Use data source to retrieve site serial number
-data "cato-oss_accountSnapshotSite" "aws-site" {
-	id = cato-oss_socket_site.aws-site.id
-}
-```
-
-<details>
-<summary>Create AWS VPC - Example Module</summary>
-
-### Create AWS VPC - Example Module
-
-```hcl
-## AWS VPC Example Module Variables
+## VPC Variables
 variable "region" { 
   type = string
   default = "us-east-2" 
@@ -121,50 +34,56 @@ variable "project_name" {
   default = "Cato Lab" 
 }
 
-variable "vpc_range" { 
-  type = string
-  default = "16.0.0.0/16"
+variable "ingress_cidr_blocks" { 
+  type = list
+  default = null
 }
 
 variable "subnet_range_mgmt" { 
   type = string
-  default = "16.0.1.0/24"
+  default = null
 }
 
 variable "subnet_range_wan" { 
   type = string
-  default = "16.0.2.0/24"
+  default = null
 }
 
 variable "subnet_range_lan" { 
   type = string
-  default = "16.0.3.0/24"
+  default = null
+}
+
+variable "vpc_range" { 
+  type = string
+  default = null
 }
 
 variable "mgmt_eni_ip" {
   description = "Choose an IP Address within the Management Subnet. You CANNOT use the first four assignable IP addresses within the subnet as it's reserved for the AWS virtual router interface. The accepted input format is X.X.X.X"
   type        = string
-  default	  = "16.0.1.5"
+  default	  = null
 }
 
 variable "wan_eni_ip" {
   description = "Choose an IP Address within the Public/WAN Subnet. You CANNOT use the first four assignable IP addresses within the subnet as it's reserved for the AWS virtual router interface. The accepted input format is X.X.X.X"
   type        = string
-  default	  = "16.0.2.5"
+  default	  = null
 }
 
 variable "lan_eni_ip" {
   description = "Choose an IP Address within the LAN Subnet. You CANNOT use the first four assignable IP addresses within the subnet as it's reserved for the AWS virtual router interface. The accepted input format is X.X.X.X"
   type        = string
-  default	  = "16.0.3.5"
+  default	  = null
 }
 
-variable "ingress_cidr_blocks" { 
-  type = list
-  default = ["11.22.33.44/32"]
+variable "vpc_id" {
+  description = ""
+  type        = string
+  default	  = null
 }
 
-## AWS VPC Example Module Resources
+## VPC Module Resources
 provider "aws" {
   region = var.region
 }
@@ -176,7 +95,7 @@ resource "aws_vpc" "cato-lab" {
   }
 }
 
-// Lookup data from region and VPC
+# Lookup data from region and VPC
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -299,7 +218,7 @@ resource "aws_security_group" "external_sg" {
   }
 }
 
-// vSocket Network Interfaces
+# vSocket Network Interfaces
 resource "aws_network_interface" "mgmteni" {
   source_dest_check = "true"
   subnet_id = aws_subnet.mgmt_subnet.id
@@ -327,7 +246,7 @@ resource "aws_network_interface" "laneni" {
   }
 }
 
-// Elastic IP Addresses
+# Elastic IP Addresses
 resource "aws_eip" "wanip" {
   tags = {
     Name = "${var.project_name}-WAN-EIP"
@@ -340,7 +259,7 @@ resource "aws_eip" "mgmteip" {
   }
 }
 
-// Elastic IP Addresses Association - Required to properly destroy 
+# Elastic IP Addresses Association - Required to properly destroy 
 resource "aws_eip_association" "wanip_assoc" {
   network_interface_id = aws_network_interface.waneni.id
   allocation_id = aws_eip.wanip.id
@@ -351,7 +270,7 @@ resource "aws_eip_association" "mgmteip_assoc" {
   allocation_id = aws_eip.mgmteip.id
 }
 
-// Routing Tables
+# Routing Tables
 resource "aws_route_table" "wanrt" {
   vpc_id = aws_vpc.cato-lab.id
   tags = {
@@ -373,7 +292,7 @@ resource "aws_route_table" "lanrt" {
   }
 }
 
-// Routes
+# Routes
 resource "aws_route" "wan_route" {
   route_table_id = aws_route_table.wanrt.id
   destination_cidr_block = "0.0.0.0/0"
@@ -392,7 +311,7 @@ resource "aws_route" "lan_route" {
   network_interface_id = aws_network_interface.laneni.id
 }
 
-// Route Table Associations
+# Route Table Associations
 resource "aws_route_table_association" "mgmt_subnet_route_table_association" {
   subnet_id = aws_subnet.mgmt_subnet.id
   route_table_id = aws_route_table.mgmtrt.id
@@ -416,17 +335,75 @@ output "sg_external" { value = aws_security_group.external_sg.id }
 output "mgmt_eni_id" { value = aws_network_interface.mgmteni.id }
 output "wan_eni_id" { value = aws_network_interface.waneni.id }
 output "lan_eni_id" { value = aws_network_interface.laneni.id }
+output "lan_subnet_id" { value = aws_subnet.lan_subnet.id }
 output "vpc_id" { value = aws_vpc.cato-lab.id }
 ```
 </details>
 
+### Create Socket Site and vSocket - Example Module
+
+In your current project working folder, a `2-vSocket` subfolder, and add a `main.tf` file with the following contents:
+
 <details>
-<summary>Create AWS vSocket - Example Module</summary>
+<summary>vSocket - Example Module</summary>
 
 ### Create AWS vSocket - Example Module
 
 ```hcl
-## AWS VPC Example Module Variables
+terraform {
+  required_providers {
+    cato-oss = {
+      source = "benekpy/cato-oss"
+    }
+  }
+  required_version = ">= 0.13"
+}
+
+## vSocket Module Varibables
+variable cato_token {}
+
+variable "account_id" {
+  description = "Account ID"
+  type        = number
+  default	  = null
+}
+
+variable "site_description" {
+  type = string
+  description = "Site description"
+}
+
+variable "project_name" {
+  type = string
+  description = "Your Cato Deployment Name Here"
+  default = "Your Cato Deployment Name Here"
+}
+
+variable "vpc_range" {
+  type = string
+  description = <<EOT
+  	Choose a unique range for your new VPC that does not conflict with the rest of your Wide Area Network.
+    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
+	EOT
+}
+
+variable "site_type" {
+  description = "The type of the site"
+  type        = string
+  default	 = "DATACENTER"
+  validation {
+    condition = contains(["DATACENTER","BRANCH","CLOUD_DC","HEADQUARTERS"], var.site_type)
+    error_message = "The site_type variable must be one of 'DATACENTER','BRANCH','CLOUD_DC','HEADQUARTERS'."
+  }
+}
+
+variable "lan_eni_ip" {
+  description = "Choose an IP Address within the LAN Subnet. You CANNOT use the first four assignable IP addresses within the subnet as it's reserved for the AWS virtual router interface. The accepted input format is X.X.X.X"
+  type        = string
+  default	  = null
+}
+
+## Virtual Socket Variables
 variable "vpc_id" {
   description = ""
   type        = string
@@ -461,21 +438,9 @@ variable "key_pair" {
   default	  = null
 }
 
-variable "project_name" {
-  type = string
-  description = "Your Cato Deployment Name Here"
-  default = "Your Cato Deployment Name Here"
-}
-
 variable "region" { 
   type = string
   default = "us-east-2" 
-}
-
-variable "serial_number" {
-  description = ""
-  type        = string
-  default	  = null
 }
 
 variable "mgmt_eni_id" {
@@ -496,90 +461,387 @@ variable "lan_eni_id" {
   default	  = null
 }
 
-## Vsocket module Resources
-provider "aws" {
-  region = var.region
+## vSocket Module Resources
+provider "azurerm" {
+	features {}
 }
 
-## Lookup data from region and VPC
-data "aws_ami" "vSocket" {
-  most_recent      = true
-  name_regex       = "VSOCKET_AWS"
-  owners           = ["679593333241"]
+provider "cato-oss" {
+    baseurl = "https://api.catonetworks.com/api/v1/graphql2"
+    token = var.cato_token
+    account_id = var.account_id
 }
 
-data "aws_availability_zones" "available" {
-  state = "available"
+resource "cato-oss_socket_site" "azure-site" {
+    connection_type  = "SOCKET_AZ1500"
+    description = var.site_description
+    name = var.project_name
+    native_range = {
+      native_network_range = var.vnet_prefix
+      local_ip = var.lan_ip
+    }
+    site_location = {
+        country_code = "US"
+		    state_code = "US-VA"
+        timezone = "America/New_York"
+    }
+    site_type = var.site_type
 }
 
-## vSocket Instance
-resource "aws_instance" "vSocket" {
-  tenancy 				 = "default"
-  ami 					 = data.aws_ami.vSocket.id
-  availability_zone 	 = data.aws_availability_zones.available.names[0]
-  key_name 				 = var.key_pair
-  instance_type = var.instance_type
-  user_data              = base64encode(var.serial_number)
-  # Network Interfaces
-  # MGMTENI
-  network_interface {
-    device_index         = 1
-    network_interface_id = var.mgmt_eni_id
-  }
-  # WANENI
-  network_interface {
-    device_index         = 0
-    network_interface_id = var.wan_eni_id
-  }
-  # LANENI
-  network_interface {
-    device_index         = 2
-    network_interface_id = var.lan_eni_id
-  }
-  # CF Property(UserData) = base64encode(var.serial_number)
-  ebs_block_device {
-	device_name 		 = "/dev/sda1"
-	volume_size 		 = var.ebs_disk_size
-	volume_type 		 = var.ebs_disk_type
-  }
-  tags = {
-    Name 				 = "${var.project_name}-vSocket"
-  }
+data "cato-oss_accountSnapshotSite" "azure-site" {
+	id = cato-oss_socket_site.azure-site.id
 }
 
+## Create vSocket Virtual Machine
+resource "azurerm_virtual_machine" "vSocket" {
+  location                     = var.location
+  name                         = "${var.assetprefix}-vSocket"
+  network_interface_ids        = [var.mgmt-nic-id, var.wan-nic-id, var.lan-nic-id]
+  primary_network_interface_id = var.mgmt-nic-id
+  resource_group_name          = var.resource-group-name
+  vm_size                      = "Standard_D8ls_v5"
+  plan {
+    name      = "public-cato-socket"
+    product   = "cato_socket"
+    publisher = "catonetworks"
+  }
+  boot_diagnostics {
+    enabled     = true
+    storage_uri = ""
+  }
+  storage_os_disk {
+    create_option     = "Attach"
+    name              = "${var.assetprefix}-vSocket-disk1"
+    managed_disk_id   = azurerm_managed_disk.vSocket-disk1.id
+    os_type = "Linux"
+  }
+  
+  depends_on = [
+    azurerm_managed_disk.vSocket-disk1
+  ]
+}
+
+resource "azurerm_managed_disk" "vSocket-disk1" {
+  name                 = "${var.assetprefix}-vSocket-disk1"
+  location             = var.location
+  resource_group_name  = var.resource-group-name
+  storage_account_type = "Standard_LRS"
+  create_option        = "FromImage"
+  disk_size_gb         = 8
+  os_type              = "Linux"
+  image_reference_id   = var.image_reference_id
+}
+
+variable "commands" {
+  type    = list(string)
+  default = [
+    "rm /cato/deviceid.txt",
+    "rm /cato/socket/configuration/socket_registration.json",
+    "nohup /cato/socket/run_socket_daemon.sh &"
+   ]
+}
+
+resource "azurerm_virtual_machine_extension" "vSocket-custom-script" {
+  auto_upgrade_minor_version = true
+  name                       = "vSocket-custom-script"
+  publisher                  = "Microsoft.Azure.Extensions"
+  type                       = "CustomScript"
+  type_handler_version       = "2.1"
+  virtual_machine_id         = azurerm_virtual_machine.vSocket.id
+  settings = <<SETTINGS
+ {
+  "commandToExecute": "${"echo '${data.cato-oss_accountSnapshotSite.azure-site.info.sockets[0].serial}' > /cato/serial.txt"};${join(";", var.commands)}"
+ }
+SETTINGS
+  depends_on = [
+    azurerm_virtual_machine.vSocket
+  ]
+}
 ```
 </details>
 
-### cato-oss_socket VPC and Vsocket Module Usage
+### Create Windows VM - Example Module (optional)
+
+In your current project working folder, a `3-WindowsVM` subfolder, and add a `main.tf` file with the following contents:
+
+<details>
+<summary>Windows VM - Example Module</summary>
+
+### Create Windows VM - Example Module
 
 ```hcl
+## Windows VM Module Variables 
+variable "location" { 
+  type = string
+  description = "(Required) The Azure Region where the Resource Group should exist. Changing this forces a new Resource Group to be created."
+  default = null
+}
+
+variable "assetprefix" {
+  type = string
+  description = "Your asset prefix for resources created"
+  default = null
+}
+
+variable "resource-group-name" { 
+  type = string
+  description = "(Required) The Name which should be used for this Resource Group. Changing this forces a new Resource Group to be created."
+  default = null
+}
+
+variable "project_name" {
+  type = string
+  description = "Your Cato Deployment Name Here"
+  default = null
+}
+
+variable "lan_subnet_id" { 
+  type = string
+  description = "(Required) LAN Subnet ID"
+  default = null
+}
+
+variable "admin_username" {
+  type = string
+  description = "Admin Username for the VM"
+  default = null
+}
+
+variable "admin_password" {
+  type = string
+  description = "Admin Password for the VM"
+  default = null
+}
+
+provider "azurerm" {
+	features {}
+}
+
+# Create Network Interfaces
+resource "azurerm_network_interface" "lan-nic" {
+  location            = var.location
+  name                = "${var.assetprefix}-Lan"
+  resource_group_name = var.resource-group-name
+  ip_configuration {
+    name                          = "LanIP"
+    private_ip_address_allocation = "Dynamic"
+    subnet_id                     = var.lan_subnet_id
+  }
+}
+
+# Create a Windows Virtual Machine
+resource "azurerm_virtual_machine" "vm" {
+  name                  = "demo-windows-vm"
+  location              = var.location
+  resource_group_name   = var.resource-group-name
+  network_interface_ids = [azurerm_network_interface.lan-nic.id]
+  vm_size               = "Standard_DS1_v2"
+
+  # Optional: Enable Managed Disks
+  storage_os_disk {
+    name              = "win-osdisk"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+
+  # Use the latest Windows Server 2019 Datacenter image
+  storage_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2019-Datacenter"
+    version   = "latest"
+  }
+
+  os_profile {
+    computer_name  = "demo-windows-vm"
+    admin_username = var.admin_username
+    admin_password = var.admin_password
+  }
+
+  os_profile_windows_config {
+    provision_vm_agent        = true
+    enable_automatic_upgrades = true
+  }
+
+  tags = {
+    environment = "Demo Windows Virtual Machine"
+  }
+}
+
+resource "azurerm_network_security_group" "windows" {
+  name                = "WindowsVMSecurityGroup"
+  location            = var.location
+  resource_group_name = var.resource-group-name
+
+  security_rule {
+    name                       = "Allow-RDP"
+    priority                   = 300
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "*"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  tags = {
+    environment = var.project_name
+  }
+}
+
+resource "azurerm_subnet_network_security_group_association" "windows" {
+  subnet_id                 = var.lan_subnet_id
+  network_security_group_id = azurerm_network_security_group.windows.id
+}
+```
+
+</details>
+
+### VPC, vSocket, and WindowsVM Module Usage
+
+<details>
+<summary>Project Variables</summary>
+
+### Project Variables Example
+
+In your current project working folder, add a `variables.tf` file with the following contents:
+
+```hcl
+variable cato_token {}
+
+variable "account_id" {
+  description = "Account ID"
+  type        = number
+  default	  = null
+}
+
+variable "location" { 
+  type = string
+  default = null
+}
+
+variable "project_name" {
+  type = string
+  description = "Your Cato Deployment Name Here"
+  default = null
+}
+
+variable "assetprefix" {
+  type = string
+  description = "Your asset prefix for resources created"
+  default = null
+}
+
+variable "site_description" {
+  type = string
+  description = "Site description"
+}
+
+variable "site_type" {
+  description = "The type of the site"
+  type        = string
+  default	 = "DATACENTER"
+  validation {
+    condition = contains(["DATACENTER","BRANCH","CLOUD_DC","HEADQUARTERS"], var.site_type)
+    error_message = "The site_type variable must be one of 'DATACENTER','BRANCH','CLOUD_DC','HEADQUARTERS'."
+  }
+}
+
+variable "vnet_prefix" {
+  type = string
+  description = <<EOT
+  	Choose a unique range for your new VPC that does not conflict with the rest of your Wide Area Network.
+    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
+	EOT
+}
+
+variable "subnet_range_mgmt" {
+  type = string
+  description = <<EOT
+    Choose a range within the VPC to use as the Management subnet. This subnet will be used initially to access the public internet and register your vSocket to the Cato Cloud.
+    The minimum subnet length to support High Availability is /28.
+    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
+	EOT
+}
+
+variable "subnet_range_wan" {
+  type = string
+  description = <<EOT
+    Choose a range within the VPC to use as the Public/WAN subnet. This subnet will be used to access the public internet and securely tunnel to the Cato Cloud.
+    The minimum subnet length to support High Availability is /28.
+    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
+	EOT
+}
+
+variable "subnet_range_lan" {
+  type = string
+  description = <<EOT
+    Choose a range within the VPC to use as the Private/LAN subnet. This subnet will host the target LAN interface of the vSocket so resources in the VPC (or AWS Region) can route to the Cato Cloud.
+    The minimum subnet length to support High Availability is /29.
+    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
+	EOT
+}
+
+variable "lan_ip" {
+	type = string
+  description = "Local IP Address of socket LAN interface"
+	default = null
+}
+```
+
+</details>
+
+In your current project working folder, add a `main.tf` file with the following contents:
+
+```hcl
+terraform {
+  required_providers {
+    cato-oss = {
+      source = "benekpy/cato-oss"
+    }
+  }
+  required_version = ">= 0.13"
+}
 
 module "vpc" {
-	source = "./1-vpc"
-	region = var.region 
-	project_name = var.project_name
-	vpc_range = var.vpc_range
-	subnet_range_mgmt = var.subnet_range_mgmt
-	subnet_range_wan = var.subnet_range_wan
-	subnet_range_lan = var.subnet_range_lan
-	mgmt_eni_ip = var.mgmt_eni_ip
-	wan_eni_ip = var.wan_eni_ip
-	lan_eni_ip = var.lan_eni_ip
-	ingress_cidr_blocks = var.ingress_cidr_blocks
+    source = "./1-vpc"
+    region = var.region 
+    project_name = var.project_name
+    vpc_range = var.vpc_range
+    subnet_range_mgmt = var.subnet_range_mgmt
+    subnet_range_wan = var.subnet_range_wan
+    subnet_range_lan = var.subnet_range_lan
+    mgmt_eni_ip = var.mgmt_eni_ip
+    wan_eni_ip = var.wan_eni_ip
+    lan_eni_ip = var.lan_eni_ip
+    ingress_cidr_blocks = var.ingress_cidr_blocks
 }
 
 module "vSocket" {
-	source = "./2-vSocket"
-	instance_type = var.instance_type
-	key_pair = var.key_pair
-	mgmt_eni_id = module.vpc.mgmt_eni_id
-	wan_eni_id = module.vpc.wan_eni_id
-	lan_eni_id = module.vpc.lan_eni_id
-	project_name = var.project_name
-	region = var.region
-	serial_number = data.cato-oss_accountSnapshotSite.aws-site.info.sockets[0].serial
-	vpc_id = module.vpc.vpc_id
+    source = "./2-vSocket"
+	cato_token = var.cato_token
+	account_id = var.account_id
+    instance_type = var.instance_type
+    vpc_range = var.vpc_range
+    site_description = var.site_description
+    key_pair = var.key_pair
+    mgmt_eni_id = module.vpc.mgmt_eni_id
+    wan_eni_id = module.vpc.wan_eni_id
+    lan_eni_id = module.vpc.lan_eni_id
+    lan_eni_ip = var.lan_eni_ip
+    project_name = var.project_name
+    region = var.region
+    vpc_id = module.vpc.vpc_id
 }
 
+module "WindowsVM" {
+    source = "./3-WindowsVM"
+    lan_subnet_id = module.vpc.lan_subnet_id
+    vpc_id = module.vpc.vpc_id  
+    region = var.region
+    key_pair = var.key_pair
+}
 ```
 
