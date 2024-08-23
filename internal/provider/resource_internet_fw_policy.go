@@ -682,10 +682,34 @@ func (r *internetFwPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 									},
 								},
 							},
-							"customcategory": schema.ListAttribute{
-								ElementType: types.StringType,
+							"customcategory": schema.ListNestedAttribute{
 								Description: "customCategory",
-								Required:    true,
+								Required:    false,
+								Optional:    true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"by": schema.StringAttribute{
+											Description: "by",
+											Required:    false,
+											Optional:    true,
+										},
+										"input": schema.StringAttribute{
+											Description: "input",
+											Required:    false,
+											Optional:    true,
+										},
+										"id": schema.StringAttribute{
+											Description: "by",
+											Required:    false,
+											Optional:    true,
+										},
+										"name": schema.StringAttribute{
+											Description: "input",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
 							},
 							"sanctionedappscategory": schema.ListAttribute{
 								ElementType: types.StringType,
