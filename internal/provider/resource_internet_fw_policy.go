@@ -437,10 +437,6 @@ func (r *internetFwPolicyResource) Metadata(_ context.Context, req resource.Meta
 func (r *internetFwPolicyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			// "enabled": schema.BoolAttribute{
-			//	Description: "Policy enabled",
-			//	Required:    true,
-			//},
 			"at": schema.SingleNestedAttribute{
 				Description: "at",
 				Required:    false,
@@ -468,11 +464,6 @@ func (r *internetFwPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 				Required:    false,
 				Optional:    true,
 			},
-			//"insert_index": schema.Int64Attribute{
-			//	Description: "insert index",
-			//	Required:    false,
-			//	Optional:    true,
-			//},
 			"rule": schema.SingleNestedAttribute{
 				Description: "rule item",
 				Required:    true,
@@ -990,7 +981,7 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	systemSouceGroupRefInput := []*cato_models.SystemGroupRefInput{}
-	for _, val := range plan.Rule.Source.Group {
+	for _, val := range plan.Rule.Source.SystemGroup {
 		systemSouceGroupRefInput = append(systemSouceGroupRefInput, &cato_models.SystemGroupRefInput{
 			By:    cato_models.ObjectRefBy(val.By.ValueString()),
 			Input: val.Input.ValueString(),
@@ -1029,8 +1020,8 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	deviceOsInput := []cato_models.OperatingSystem{}
-	for _, val := range plan.Rule.Device {
-		deviceOsInput = append(deviceOsInput, cato_models.OperatingSystem(val.ID.ValueString()))
+	for _, val := range plan.Rule.DeviceOs {
+		deviceOsInput = append(deviceOsInput, cato_models.OperatingSystem(val.ValueString()))
 	}
 
 	ipDestRange := []*cato_models.IPAddressRangeInput{}
@@ -1058,7 +1049,7 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	customAppDestInput := []*cato_models.CustomApplicationRefInput{}
-	for _, val := range plan.Rule.Destination.Application {
+	for _, val := range plan.Rule.Destination.CustomApp {
 		customAppDestInput = append(customAppDestInput, &cato_models.CustomApplicationRefInput{
 			By:    cato_models.ObjectRefBy(val.By.ValueString()),
 			Input: val.Input.ValueString(),
@@ -1074,7 +1065,7 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	customDestCategory := []*cato_models.CustomCategoryRefInput{}
-	for _, val := range plan.Rule.Destination.Application {
+	for _, val := range plan.Rule.Destination.CustomCategory {
 		customDestCategory = append(customDestCategory, &cato_models.CustomCategoryRefInput{
 			By:    cato_models.ObjectRefBy(val.By.ValueString()),
 			Input: val.Input.ValueString(),
@@ -1082,7 +1073,7 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	sanctionedDestAppsCategory := []*cato_models.SanctionedAppsCategoryRefInput{}
-	for _, val := range plan.Rule.Destination.Application {
+	for _, val := range plan.Rule.Destination.SanctionedAppsCategory {
 		sanctionedDestAppsCategory = append(sanctionedDestAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
 			By:    cato_models.ObjectRefBy(val.By.ValueString()),
 			Input: val.Input.ValueString(),
@@ -1092,7 +1083,7 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 	serviceInput := &cato_models.InternetFirewallServiceTypeInput{}
 
 	ruleTrackingAlertSubscriptionGroup := []*cato_models.SubscriptionGroupRefInput{}
-	for _, val := range plan.Rule.Destination.Application {
+	for _, val := range plan.Rule.Tracking.Alert.SubscriptionGroup {
 		ruleTrackingAlertSubscriptionGroup = append(ruleTrackingAlertSubscriptionGroup, &cato_models.SubscriptionGroupRefInput{
 			By:    cato_models.ObjectRefBy(val.By.ValueString()),
 			Input: val.Input.ValueString(),
@@ -1100,7 +1091,7 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	ruleTrackingAlertMailingList := []*cato_models.SubscriptionMailingListRefInput{}
-	for _, val := range plan.Rule.Destination.Application {
+	for _, val := range plan.Rule.Tracking.Alert.MailingList {
 		ruleTrackingAlertMailingList = append(ruleTrackingAlertMailingList, &cato_models.SubscriptionMailingListRefInput{
 			By:    cato_models.ObjectRefBy(val.By.ValueString()),
 			Input: val.Input.ValueString(),
@@ -1108,7 +1099,7 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	ruleTrackingAlertSubscriptionWebhook := []*cato_models.SubscriptionWebhookRefInput{}
-	for _, val := range plan.Rule.Destination.Application {
+	for _, val := range plan.Rule.Tracking.Alert.Webhook {
 		ruleTrackingAlertSubscriptionWebhook = append(ruleTrackingAlertSubscriptionWebhook, &cato_models.SubscriptionWebhookRefInput{
 			By:    cato_models.ObjectRefBy(val.By.ValueString()),
 			Input: val.Input.ValueString(),
@@ -1588,7 +1579,7 @@ func (r *internetFwPolicyResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	customDestCategory := []*cato_models.CustomCategoryRefInput{}
-	for _, val := range plan.Rule.Destination.Application {
+	for _, val := range plan.Rule.Destination.CustomCategory {
 		customDestCategory = append(customDestCategory, &cato_models.CustomCategoryRefInput{
 			By:    cato_models.ObjectRefBy(val.By.ValueString()),
 			Input: val.Input.ValueString(),
@@ -1596,7 +1587,7 @@ func (r *internetFwPolicyResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	sanctionedDestAppsCategory := []*cato_models.SanctionedAppsCategoryRefInput{}
-	for _, val := range plan.Rule.Destination.Application {
+	for _, val := range plan.Rule.Destination.SanctionedAppsCategory {
 		sanctionedDestAppsCategory = append(sanctionedDestAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
 			By:    cato_models.ObjectRefBy(val.By.ValueString()),
 			Input: val.Input.ValueString(),
