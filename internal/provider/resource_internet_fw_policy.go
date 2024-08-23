@@ -437,10 +437,6 @@ func (r *internetFwPolicyResource) Metadata(_ context.Context, req resource.Meta
 func (r *internetFwPolicyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			// "enabled": schema.BoolAttribute{
-			//	Description: "Policy enabled",
-			//	Required:    true,
-			//},
 			"at": schema.SingleNestedAttribute{
 				Description: "at",
 				Required:    false,
@@ -468,11 +464,6 @@ func (r *internetFwPolicyResource) Schema(_ context.Context, _ resource.SchemaRe
 				Required:    false,
 				Optional:    true,
 			},
-			//"insert_index": schema.Int64Attribute{
-			//	Description: "insert index",
-			//	Required:    false,
-			//	Optional:    true,
-			//},
 			"rule": schema.SingleNestedAttribute{
 				Description: "rule item",
 				Required:    true,
