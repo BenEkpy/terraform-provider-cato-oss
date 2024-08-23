@@ -223,6 +223,7 @@ resource "aws_network_interface" "mgmteni" {
   source_dest_check = "true"
   subnet_id = aws_subnet.mgmt_subnet.id
   private_ips = [var.mgmt_eni_ip]
+  security_groups = [aws_security_group.external_sg.id]
   tags = {
     Name = "${var.project_name}-MGMT-INT"
   }
@@ -232,6 +233,7 @@ resource "aws_network_interface" "waneni" {
   source_dest_check = "true"
   subnet_id = aws_subnet.wan_subnet.id
   private_ips = [var.wan_eni_ip]
+  security_groups = [aws_security_group.external_sg.id]
   tags = {
     Name = "${var.project_name}-WAN-INT"
   }
@@ -241,6 +243,7 @@ resource "aws_network_interface" "laneni" {
   source_dest_check = "false"
   subnet_id = aws_subnet.lan_subnet.id
   private_ips = [var.lan_eni_ip]
+  security_groups = [aws_security_group.internal_sg.id]
   tags = {
     Name = "${var.project_name}-LAN-INT"
   }
