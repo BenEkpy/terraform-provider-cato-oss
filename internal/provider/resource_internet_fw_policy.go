@@ -1401,480 +1401,216 @@ func (r *internetFwPolicyResource) Update(ctx context.Context, req resource.Upda
 	mutationInput := &cato_models.InternetFirewallPolicyMutationInput{}
 
 	hostSourceRefInput := []*cato_models.HostRefInput{}
-	if len(plan.Rule.Source.Host) > 0 {
-		for _, val := range plan.Rule.Source.Host {
-			hostSourceRefInput = append(hostSourceRefInput, &cato_models.HostRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.Host {
-			hostSourceRefInput = append(hostSourceRefInput, &cato_models.HostRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.Host {
+		hostSourceRefInput = append(hostSourceRefInput, &cato_models.HostRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	siteSourceRefInput := []*cato_models.SiteRefInput{}
-	if len(plan.Rule.Source.Site) > 0 {
-		for _, val := range plan.Rule.Source.Site {
-			siteSourceRefInput = append(siteSourceRefInput, &cato_models.SiteRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Name.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.Site {
-			siteSourceRefInput = append(siteSourceRefInput, &cato_models.SiteRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Name.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.Site {
+		siteSourceRefInput = append(siteSourceRefInput, &cato_models.SiteRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Name.ValueString(),
+		})
 	}
 
 	ipSourcerange := []*cato_models.IPAddressRangeInput{}
-	if len(plan.Rule.Source.IPRange) > 0 {
-		for _, val := range plan.Rule.Source.IPRange {
-			ipSourcerange = append(ipSourcerange, &cato_models.IPAddressRangeInput{
-				From: val.From.ValueString(),
-				To:   val.To.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.IPRange {
-			ipSourcerange = append(ipSourcerange, &cato_models.IPAddressRangeInput{
-				From: val.From.ValueString(),
-				To:   val.To.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.IPRange {
+		ipSourcerange = append(ipSourcerange, &cato_models.IPAddressRangeInput{
+			From: val.From.ValueString(),
+			To:   val.To.ValueString(),
+		})
 	}
 
 	globalSourceIpRange := []*cato_models.GlobalIPRangeRefInput{}
-	if len(plan.Rule.Source.GlobalIPRange) > 0 {
-		for _, val := range plan.Rule.Source.GlobalIPRange {
-			globalSourceIpRange = append(globalSourceIpRange, &cato_models.GlobalIPRangeRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.GlobalIPRange {
-			globalSourceIpRange = append(globalSourceIpRange, &cato_models.GlobalIPRangeRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.GlobalIPRange {
+		globalSourceIpRange = append(globalSourceIpRange, &cato_models.GlobalIPRangeRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	networkSourceInterfaceRefInput := []*cato_models.NetworkInterfaceRefInput{}
-	if len(plan.Rule.Source.NetworkInterface) > 0 {
-		for _, val := range plan.Rule.Source.NetworkInterface {
-			networkSourceInterfaceRefInput = append(networkSourceInterfaceRefInput, &cato_models.NetworkInterfaceRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.NetworkInterface {
-			networkSourceInterfaceRefInput = append(networkSourceInterfaceRefInput, &cato_models.NetworkInterfaceRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.NetworkInterface {
+		networkSourceInterfaceRefInput = append(networkSourceInterfaceRefInput, &cato_models.NetworkInterfaceRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	siteSourceNetworkSubnetRefInput := []*cato_models.SiteNetworkSubnetRefInput{}
-	if len(plan.Rule.Source.SiteNetworkSubnet) > 0 {
-		for _, val := range plan.Rule.Source.SiteNetworkSubnet {
-			siteSourceNetworkSubnetRefInput = append(siteSourceNetworkSubnetRefInput, &cato_models.SiteNetworkSubnetRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.SiteNetworkSubnet {
-			siteSourceNetworkSubnetRefInput = append(siteSourceNetworkSubnetRefInput, &cato_models.SiteNetworkSubnetRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.SiteNetworkSubnet {
+		siteSourceNetworkSubnetRefInput = append(siteSourceNetworkSubnetRefInput, &cato_models.SiteNetworkSubnetRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	floatingSourceSubnetRefInput := []*cato_models.FloatingSubnetRefInput{}
-	if len(plan.Rule.Source.FloatingSubnet) > 0 {
-		for _, val := range plan.Rule.Source.FloatingSubnet {
-			floatingSourceSubnetRefInput = append(floatingSourceSubnetRefInput, &cato_models.FloatingSubnetRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.FloatingSubnet {
-			floatingSourceSubnetRefInput = append(floatingSourceSubnetRefInput, &cato_models.FloatingSubnetRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.FloatingSubnet {
+		floatingSourceSubnetRefInput = append(floatingSourceSubnetRefInput, &cato_models.FloatingSubnetRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	userSourceRefInput := []*cato_models.UserRefInput{}
-	if len(plan.Rule.Source.User) > 0 {
-		for _, val := range plan.Rule.Source.User {
-			userSourceRefInput = append(userSourceRefInput, &cato_models.UserRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.User {
-			userSourceRefInput = append(userSourceRefInput, &cato_models.UserRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.User {
+		userSourceRefInput = append(userSourceRefInput, &cato_models.UserRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	usersSourceGroupRefInput := []*cato_models.UsersGroupRefInput{}
-	if len(plan.Rule.Source.UsersGroup) > 0 {
-		for _, val := range plan.Rule.Source.UsersGroup {
-			usersSourceGroupRefInput = append(usersSourceGroupRefInput, &cato_models.UsersGroupRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.UsersGroup {
-			usersSourceGroupRefInput = append(usersSourceGroupRefInput, &cato_models.UsersGroupRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.UsersGroup {
+		usersSourceGroupRefInput = append(usersSourceGroupRefInput, &cato_models.UsersGroupRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	groupSourceRefInput := []*cato_models.GroupRefInput{}
-	if len(plan.Rule.Source.Group) > 0 {
-		for _, val := range plan.Rule.Source.Group {
-			groupSourceRefInput = append(groupSourceRefInput, &cato_models.GroupRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.Group {
-			groupSourceRefInput = append(groupSourceRefInput, &cato_models.GroupRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.Group {
+		groupSourceRefInput = append(groupSourceRefInput, &cato_models.GroupRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	systemSouceGroupRefInput := []*cato_models.SystemGroupRefInput{}
-	if len(plan.Rule.Source.Group) > 0 {
-		for _, val := range plan.Rule.Source.Group {
-			systemSouceGroupRefInput = append(systemSouceGroupRefInput, &cato_models.SystemGroupRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Source.Group {
-			systemSouceGroupRefInput = append(systemSouceGroupRefInput, &cato_models.SystemGroupRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Source.Group {
+		systemSouceGroupRefInput = append(systemSouceGroupRefInput, &cato_models.SystemGroupRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	countryInput := []*cato_models.CountryRefInput{}
-	if len(plan.Rule.Country) > 0 {
-		for _, val := range plan.Rule.Country {
-			countryInput = append(countryInput, &cato_models.CountryRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Country {
-			countryInput = append(countryInput, &cato_models.CountryRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Country {
+		countryInput = append(countryInput, &cato_models.CountryRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	countryDestInput := []*cato_models.CountryRefInput{}
-	if len(plan.Rule.Destination.Country) > 0 {
-		for _, val := range plan.Rule.Destination.Country {
-			countryInput = append(countryInput, &cato_models.CountryRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.Country {
-			countryInput = append(countryInput, &cato_models.CountryRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Destination.Country {
+		countryInput = append(countryInput, &cato_models.CountryRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
-	connectionOrigin := cato_models.ConnectionOriginEnum(state.Rule.ConnectionOrigin.ValueString())
-	if plan.Rule.ConnectionOrigin.ValueString() != "" {
-		connectionOrigin = cato_models.ConnectionOriginEnum(plan.Rule.ConnectionOrigin.ValueString())
-	}
-
-	actionEnum := cato_models.InternetFirewallActionEnum(state.Rule.Action.ValueString())
-	if plan.Rule.Action.ValueString() != "" {
-		actionEnum = cato_models.InternetFirewallActionEnum(plan.Rule.Action.ValueString())
-	}
-
-	domainDestList := makeStringSliceFromStringList(state.Rule.Destination.Domain)
-	if len(plan.Rule.Destination.Domain) > 0 {
-		domainDestList = makeStringSliceFromStringList(plan.Rule.Destination.Domain)
-	}
-
-	fqdnDestList := makeStringSliceFromStringList(state.Rule.Destination.Fqdn)
-	if len(plan.Rule.Destination.Fqdn) > 0 {
-		fqdnDestList = makeStringSliceFromStringList(plan.Rule.Destination.Fqdn)
-	}
-
-	subnetSourceRefInput := makeStringSliceFromStringList(state.Rule.Source.Subnet)
-	if len(state.Rule.Source.Subnet) > 0 {
-		subnetSourceRefInput = makeStringSliceFromStringList(plan.Rule.Source.Subnet)
-	}
+	connectionOrigin := cato_models.ConnectionOriginEnum(plan.Rule.ConnectionOrigin.ValueString())
+	actionEnum := cato_models.InternetFirewallActionEnum(plan.Rule.Action.ValueString())
+	domainDestList := makeStringSliceFromStringList(plan.Rule.Destination.Domain)
+	fqdnDestList := makeStringSliceFromStringList(plan.Rule.Destination.Fqdn)
+	subnetSourceRefInput := makeStringSliceFromStringList(plan.Rule.Source.Subnet)
 
 	deviceInput := []*cato_models.DeviceProfileRefInput{}
-	if len(plan.Rule.Device) > 0 {
-		for _, val := range plan.Rule.Device {
-			deviceInput = append(deviceInput, &cato_models.DeviceProfileRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Device {
-			deviceInput = append(deviceInput, &cato_models.DeviceProfileRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Device {
+		deviceInput = append(deviceInput, &cato_models.DeviceProfileRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	deviceOsInput := []cato_models.OperatingSystem{}
-	if len(plan.Rule.Device) > 0 {
-		for _, val := range plan.Rule.Device {
-			deviceOsInput = append(deviceOsInput, cato_models.OperatingSystem(val.ID.ValueString()))
-		}
-	} else {
-		for _, val := range state.Rule.Device {
-			deviceOsInput = append(deviceOsInput, cato_models.OperatingSystem(val.ID.ValueString()))
-		}
+	for _, val := range plan.Rule.Device {
+		deviceOsInput = append(deviceOsInput, cato_models.OperatingSystem(val.ID.ValueString()))
 	}
 
 	ipDestRange := []*cato_models.IPAddressRangeInput{}
-	if len(plan.Rule.Destination.IPRange) > 0 {
-		for _, val := range plan.Rule.Destination.IPRange {
-			ipDestRange = append(ipDestRange, &cato_models.IPAddressRangeInput{
-				From: val.From.ValueString(),
-				To:   val.To.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.IPRange {
-			ipDestRange = append(ipDestRange, &cato_models.IPAddressRangeInput{
-				From: val.From.ValueString(),
-				To:   val.To.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Destination.IPRange {
+		ipDestRange = append(ipDestRange, &cato_models.IPAddressRangeInput{
+			From: val.From.ValueString(),
+			To:   val.To.ValueString(),
+		})
 	}
 
 	globalDestIpRange := []*cato_models.GlobalIPRangeRefInput{}
-	if len(plan.Rule.Destination.GlobalIPRange) > 0 {
-		for _, val := range plan.Rule.Destination.GlobalIPRange {
-			globalDestIpRange = append(globalDestIpRange, &cato_models.GlobalIPRangeRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.GlobalIPRange {
-			globalDestIpRange = append(globalDestIpRange, &cato_models.GlobalIPRangeRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Destination.GlobalIPRange {
+		globalDestIpRange = append(globalDestIpRange, &cato_models.GlobalIPRangeRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	applicationDestInput := []*cato_models.ApplicationRefInput{}
-	if len(plan.Rule.Destination.Application) > 0 {
-		for _, val := range plan.Rule.Destination.Application {
-			applicationDestInput = append(applicationDestInput, &cato_models.ApplicationRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.Application {
-			applicationDestInput = append(applicationDestInput, &cato_models.ApplicationRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Destination.Application {
+		applicationDestInput = append(applicationDestInput, &cato_models.ApplicationRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	customAppDestInput := []*cato_models.CustomApplicationRefInput{}
-	if len(plan.Rule.Destination.Application) > 0 {
-		for _, val := range plan.Rule.Destination.Application {
-			customAppDestInput = append(customAppDestInput, &cato_models.CustomApplicationRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.Application {
-			customAppDestInput = append(customAppDestInput, &cato_models.CustomApplicationRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Destination.Application {
+		customAppDestInput = append(customAppDestInput, &cato_models.CustomApplicationRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	appDestCategoryInput := []*cato_models.ApplicationCategoryRefInput{}
-	if len(plan.Rule.Destination.AppCategory) > 0 {
-		for _, val := range plan.Rule.Destination.AppCategory {
-			appDestCategoryInput = append(appDestCategoryInput, &cato_models.ApplicationCategoryRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.AppCategory {
-			appDestCategoryInput = append(appDestCategoryInput, &cato_models.ApplicationCategoryRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Destination.AppCategory {
+		appDestCategoryInput = append(appDestCategoryInput, &cato_models.ApplicationCategoryRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	customDestCategory := []*cato_models.CustomCategoryRefInput{}
-	if len(plan.Rule.Destination.Application) > 0 {
-		for _, val := range plan.Rule.Destination.Application {
-			customDestCategory = append(customDestCategory, &cato_models.CustomCategoryRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.Application {
-			customDestCategory = append(customDestCategory, &cato_models.CustomCategoryRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Destination.Application {
+		customDestCategory = append(customDestCategory, &cato_models.CustomCategoryRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	sanctionedDestAppsCategory := []*cato_models.SanctionedAppsCategoryRefInput{}
-	if len(plan.Rule.Destination.Application) > 0 {
-		for _, val := range plan.Rule.Destination.Application {
-			sanctionedDestAppsCategory = append(sanctionedDestAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.Application {
-			sanctionedDestAppsCategory = append(sanctionedDestAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Destination.Application {
+		sanctionedDestAppsCategory = append(sanctionedDestAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	serviceInput := &cato_models.InternetFirewallServiceTypeUpdateInput{}
 
 	ruleTrackingAlertSubscriptionGroup := []*cato_models.SubscriptionGroupRefInput{}
-	if len(plan.Rule.Destination.Application) > 0 {
-		for _, val := range plan.Rule.Destination.Application {
-			ruleTrackingAlertSubscriptionGroup = append(ruleTrackingAlertSubscriptionGroup, &cato_models.SubscriptionGroupRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.Application {
-			ruleTrackingAlertSubscriptionGroup = append(ruleTrackingAlertSubscriptionGroup, &cato_models.SubscriptionGroupRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Destination.Application {
+		ruleTrackingAlertSubscriptionGroup = append(ruleTrackingAlertSubscriptionGroup, &cato_models.SubscriptionGroupRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	ruleTrackingAlertMailingList := []*cato_models.SubscriptionMailingListRefInput{}
-	if len(plan.Rule.Destination.Application) > 0 {
-		for _, val := range plan.Rule.Destination.Application {
-			ruleTrackingAlertMailingList = append(ruleTrackingAlertMailingList, &cato_models.SubscriptionMailingListRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.Application {
-			ruleTrackingAlertMailingList = append(ruleTrackingAlertMailingList, &cato_models.SubscriptionMailingListRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Tracking.Alert.MailingList {
+		ruleTrackingAlertMailingList = append(ruleTrackingAlertMailingList, &cato_models.SubscriptionMailingListRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
 	ruleTrackingAlertSubscriptionWebhook := []*cato_models.SubscriptionWebhookRefInput{}
-	if len(plan.Rule.Destination.Application) > 0 {
-		for _, val := range plan.Rule.Destination.Application {
-			ruleTrackingAlertSubscriptionWebhook = append(ruleTrackingAlertSubscriptionWebhook, &cato_models.SubscriptionWebhookRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
-	} else {
-		for _, val := range state.Rule.Destination.Application {
-			ruleTrackingAlertSubscriptionWebhook = append(ruleTrackingAlertSubscriptionWebhook, &cato_models.SubscriptionWebhookRefInput{
-				By:    cato_models.ObjectRefBy(val.By.ValueString()),
-				Input: val.Input.ValueString(),
-			})
-		}
+	for _, val := range plan.Rule.Destination.Application {
+		ruleTrackingAlertSubscriptionWebhook = append(ruleTrackingAlertSubscriptionWebhook, &cato_models.SubscriptionWebhookRefInput{
+			By:    cato_models.ObjectRefBy(val.By.ValueString()),
+			Input: val.Input.ValueString(),
+		})
 	}
 
-	activeOnUpdate := cato_models.PolicyActiveOnEnum(state.Rule.Schedule.ActiveOn.ValueString())
-	if plan.Rule.Schedule.ActiveOn.ValueString() != "" {
-		activeOnUpdate = cato_models.PolicyActiveOnEnum(plan.Rule.Schedule.ActiveOn.ValueString())
-	}
-
-	frequencyUpdate := cato_models.PolicyRuleTrackingFrequencyEnum(state.Rule.Tracking.Alert.Frequency.ValueString())
-	if plan.Rule.Tracking.Alert.Frequency.ValueString() != "" {
-		frequencyUpdate = cato_models.PolicyRuleTrackingFrequencyEnum(plan.Rule.Tracking.Alert.Frequency.ValueString())
-	}
-
-	sourceIpSlice := makeStringSliceFromStringList(state.Rule.Source.IP)
-	if len(plan.Rule.Source.IP) > 0 {
-		sourceIpSlice = makeStringSliceFromStringList(plan.Rule.Source.IP)
-	}
-
-	destIpSlice := makeStringSliceFromStringList(state.Rule.Destination.IP)
-	if len(plan.Rule.Destination.IP) > 0 {
-		destIpSlice = makeStringSliceFromStringList(plan.Rule.Destination.IP)
-	}
-
-	destSubnetSlice := makeStringSliceFromStringList(state.Rule.Destination.Subnet)
-	if len(plan.Rule.Destination.Subnet) > 0 {
-		destSubnetSlice = makeStringSliceFromStringList(plan.Rule.Destination.Subnet)
-	}
-
-	destRemoteAsn := makeStringSliceFromStringList(state.Rule.Destination.RemoteAsn)
-	if len(plan.Rule.Destination.RemoteAsn) > 0 {
-		destRemoteAsn = makeStringSliceFromStringList(plan.Rule.Destination.RemoteAsn)
-	}
+	activeOnUpdate := cato_models.PolicyActiveOnEnum(plan.Rule.Schedule.ActiveOn.ValueString())
+	frequencyUpdate := cato_models.PolicyRuleTrackingFrequencyEnum(plan.Rule.Tracking.Alert.Frequency.ValueString())
+	sourceIpSlice := makeStringSliceFromStringList(plan.Rule.Source.IP)
+	destIpSlice := makeStringSliceFromStringList(plan.Rule.Destination.IP)
+	destSubnetSlice := makeStringSliceFromStringList(plan.Rule.Destination.Subnet)
+	destRemoteAsn := makeStringSliceFromStringList(plan.Rule.Destination.RemoteAsn)
 
 	updateInput := cato_models.InternetFirewallUpdateRuleInput{
 		ID: state.Rule.ID.ValueString(),
