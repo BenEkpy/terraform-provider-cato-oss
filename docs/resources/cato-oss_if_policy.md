@@ -11,7 +11,7 @@ The `cato-oss_if_policy` resource contains the configuration parameters necessar
 add a network range to a cato site. 
 ([virtual socket in AWS/Azure, or physical socket](https://support.catonetworks.com/hc/en-us/articles/4413280502929-Working-with-X1500-X1600-and-X1700-Socket-Sites)).
 Documentation for the underlying API used in this resource can be found at
-[mutation.addNetworkRange()](https://api.catonetworks.com/documentation/#mutation-site.addNetworkRange).
+[mutation.policy.internetFirewall.addRule()](https://api.catonetworks.com/documentation/#mutation-policy.internetFirewall.addRule).
 
 ## Example Usage
 
