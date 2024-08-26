@@ -2,7 +2,7 @@
 page_title: "cato-oss_wan_interface Resource - terraform-provider-cato-oss"
 subcategory: "Provider Reference"
 description: |-
-  Provides a cato-oss_socketsite resource  
+  Provides a cato-oss_wan_interface resource  
 ---
 
 # cato-oss_wan_interface (Resource)

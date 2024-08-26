@@ -1,11 +1,11 @@
 ---
-page_title: "cato-oss_wan_interface Resource - terraform-provider-cato-oss"
+page_title: "cato-oss_network_range Resource - terraform-provider-cato-oss"
 subcategory: "Provider Reference"
 description: |-
-  Provides a cato-oss_socketsite resource  
+  Provides a cato-oss_network_range resource  
 ---
 
-# cato-oss_wan_interface (Resource)
+# cato-oss_network_range (Resource)
 
 The `cato-oss_network_range` resource contains the configuration parameters necessary to 
 add a network range to a cato site. 
