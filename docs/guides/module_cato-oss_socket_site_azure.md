@@ -15,122 +15,34 @@ Documentation for the underlying API used in this resource can be found at
 
 ## Example Usage
 
-### Create Azure VPC - Example Module
-
-<details>
-<summary>Socket Site Variables</summary>
-
-### Socket Site Variables
-
-```hcl
-## Cato Provider Variables
-variable cato_token {}
-
-variable "account_id" {
-  description = "Account ID"
-  type        = number
-  default	  = null
-}
-
-## Cato socket site variables
-variable "site_description" {
-  type = string
-  description = "Site description"
-}
-
-variable "project_name" {
-  type = string
-  description = "Your Cato Deployment Name Here"
-  default = "Your Cato Deployment Name Here"
-}
-
-variable "vnet_prefix" {
-  type = string
-  description = <<EOT
-  	Choose a unique range for your new VPC that does not conflict with the rest of your Wide Area Network.
-    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
-	EOT
-  default = "20.0.0.0/16"
-}
-
-variable "site_type" {
-  description = "The type of the site"
-  type        = string
-  default	 = "DATACENTER"
-  validation {
-    condition = contains(["DATACENTER","BRANCH","CLOUD_DC","HEADQUARTERS"], var.site_type)
-    error_message = "The site_type variable must be one of 'DATACENTER','BRANCH','CLOUD_DC','HEADQUARTERS'."
-  }
-}
-
-variable "lan_eni_ip" {
-   description = "Choose an IP Address within the LAN Subnet. You CANNOT use the first four assignable IP addresses within the subnet as it's reserved for the AWS virtual router interface. The accepted input format is X.X.X.X"
-   type        = string
-   default	  = null
-}
-
-```
-</details>
-
-### cato-oss_socket Resource
-
-```hcl
-## cato-oss_socket Provider and Resource
-
-provider "cato-oss" {
-    baseurl = "https://api.catonetworks.com/api/v1/graphql2"
-    token = var.cato_token
-    account_id = var.account_id
-}
-
-resource "cato-oss_socket_site" "azure-site" {
-    connection_type  = "SOCKET_AZ1500"
-    description = var.site_description
-    name = var.project_name
-    native_range = {
-      native_network_range = var.vnet_prefix
-      local_ip = var.lan_ip
-    }
-    site_location = {
-        country_code = "US"
-		    state_code = "US-VA"
-        timezone = "America/New_York"
-    }
-    site_type = var.site_type
-}
-
-data "cato-oss_accountSnapshotSite" "azure-site" {
-	id = cato-oss_socket_site.azure-site.id
-}
-
-```
-
-<details>
-<summary>Create Azure VNET - Example Module</summary>
-
 ### Create Azure VNET - Example Module
 
+<details>
+<summary>Azure VNET - Example Module</summary>
+
+In your current project working folder, a `1-vnet` subfolder, and add a `main.tf` file with the following contents:
+
 ```hcl
-## Azure VNET Example Module Variables
+## VNET Variables
 variable "assetprefix" {
   type = string
   description = "Your asset prefix for resources created"
-  default = "LAB1"
+  default = null
 }
 
 variable "location" { 
   type = string
-  default = "East US"
+  default = null
 }
 
 variable "lan_ip" {
 	type = string
-	default = "20.0.3.4"
+	default = null
 }
 
 variable "project_name" { 
   type = string
-  default = "Azure-Lab-Deployment"
+  default = null
 }
 
 variable "subnet_range_mgmt" {
@@ -172,7 +84,7 @@ variable "vnet_prefix" {
   default = null
 }
 
-## Azure VNET Example Module Resources
+## VNET Module Resources
 provider "azurerm" {
 	features {}
 }
@@ -435,22 +347,79 @@ resource "azurerm_subnet_route_table_association" "rt-table-association-lan" {
   ]
 }
 
-## The following attributes are exported:
+## VNET Module Outputs:
 output "resource-group-name" { value = azurerm_resource_group.azure-rg.name }
 output "mgmt-nic-id" { value = azurerm_network_interface.mgmt-nic.id }
 output "wan-nic-id" { value = azurerm_network_interface.wan-nic.id }
 output "lan-nic-id" { value = azurerm_network_interface.lan-nic.id }
-
+output "lan_subnet_id" { value = azurerm_subnet.subnet-lan.id }
 ```
 </details>
 
+### Create Socket Site and vSocket - Example Module
+
+In your current project working folder, a `2-vSocket` subfolder, and add a `main.tf` file with the following contents:
+
 <details>
-<summary>Create Azure vSocket - Example Module</summary>
+<summary>vSocket - Example Module</summary>
 
 ### Create Azure vSocket - Example Module
 
 ```hcl
-## Azure vSocket Example Module Variables
+terraform {
+  required_providers {
+    cato-oss = {
+      source = "benekpy/cato-oss"
+    }
+  }
+  required_version = ">= 0.13"
+}
+
+## vSocket Module Varibables
+variable cato_token {}
+
+variable "account_id" {
+  description = "Account ID"
+  type        = number
+  default	  = null
+}
+
+variable "site_description" {
+  type = string
+  description = "Site description"
+}
+
+variable "site_type" {
+  description = "The type of the site"
+  type        = string
+  default	 = "DATACENTER"
+  validation {
+    condition = contains(["DATACENTER","BRANCH","CLOUD_DC","HEADQUARTERS"], var.site_type)
+    error_message = "The site_type variable must be one of 'DATACENTER','BRANCH','CLOUD_DC','HEADQUARTERS'."
+  }
+}
+
+variable "project_name" {
+  type = string
+  description = "Your Cato Deployment Name Here"
+  default = null
+}
+
+variable "vnet_prefix" {
+  type = string
+  description = <<EOT
+  	Choose a unique range for your new VPC that does not conflict with the rest of your Wide Area Network.
+    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
+	EOT
+}
+
+variable "lan_ip" {
+	type = string
+  description = "Local IP Address of socket LAN interface"
+	default = null
+}
+
+## vSocket Params
 variable "assetprefix" {
   type = string
   description = "Your asset prefix for resources created"
@@ -467,11 +436,6 @@ variable "resource-group-name" {
   type = string
   description = "(Required) The Name which should be used for this Resource Group. Changing this forces a new Resource Group to be created."
   default = null
-}
-
-variable "socketsite-serial" { 
-  type = string
-  default = "AA-BB-CC-DD-EE-FF"
 }
 
 variable "mgmt-nic-id" {
@@ -495,13 +459,39 @@ variable "image_reference_id" {
 	default = "/Subscriptions/38b5ec1d-b3b6-4f50-a34e-f04a67121955/Providers/Microsoft.Compute/Locations/eastus/Publishers/catonetworks/ArtifactTypes/VMImage/Offers/cato_socket/Skus/public-cato-socket/Versions/19.0.17805"
 }
 
-## Vsocket module Resources
+## vSocket Module Variables
 provider "azurerm" {
 	features {}
 }
 
-## Create Vsocket Virtual Machine
-resource "azurerm_virtual_machine" "vsocket" {
+provider "cato-oss" {
+    baseurl = "https://api.catonetworks.com/api/v1/graphql2"
+    token = var.cato_token
+    account_id = var.account_id
+}
+
+resource "cato-oss_socket_site" "azure-site" {
+    connection_type  = "SOCKET_AZ1500"
+    description = var.site_description
+    name = var.project_name
+    native_range = {
+      native_network_range = var.vnet_prefix
+      local_ip = var.lan_ip
+    }
+    site_location = {
+        country_code = "US"
+		    state_code = "US-VA"
+        timezone = "America/New_York"
+    }
+    site_type = var.site_type
+}
+
+data "cato-oss_accountSnapshotSite" "azure-site" {
+	id = cato-oss_socket_site.azure-site.id
+}
+
+## Create vSocket Virtual Machine
+resource "azurerm_virtual_machine" "vSocket" {
   location                     = var.location
   name                         = "${var.assetprefix}-vSocket"
   network_interface_ids        = [var.mgmt-nic-id, var.wan-nic-id, var.lan-nic-id]
@@ -549,30 +539,269 @@ variable "commands" {
    ]
 }
 
-resource "azurerm_virtual_machine_extension" "vsocket-custom-script" {
+resource "azurerm_virtual_machine_extension" "vSocket-custom-script" {
   auto_upgrade_minor_version = true
-  name                       = "vsocket-custom-script"
+  name                       = "vSocket-custom-script"
   publisher                  = "Microsoft.Azure.Extensions"
   type                       = "CustomScript"
   type_handler_version       = "2.1"
-  virtual_machine_id         = azurerm_virtual_machine.vsocket.id
+  virtual_machine_id         = azurerm_virtual_machine.vSocket.id
   settings = <<SETTINGS
  {
-  "commandToExecute": "${"echo '${var.socketsite-serial}' > /cato/serial.txt"};${join(";", var.commands)}"
+  "commandToExecute": "${"echo '${data.cato-oss_accountSnapshotSite.azure-site.info.sockets[0].serial}' > /cato/serial.txt"};${join(";", var.commands)}"
  }
 SETTINGS
   depends_on = [
-    azurerm_virtual_machine.vsocket
+    azurerm_virtual_machine.vSocket
   ]
 }
-
 ```
 </details>
 
-### cato-oss_socket VPC and Vsocket Module Usage
+### Create Windows VM - Example Module (optional)
+
+In your current project working folder, a `3-WindowsVM` subfolder, and add a `main.tf` file with the following contents:
+
+<details>
+<summary>Windows VM - Example Module</summary>
+
+### Create Windows VM - Example Module
 
 ```hcl
+## Windows VM Module Variables 
+variable "location" { 
+  type = string
+  description = "(Required) The Azure Region where the Resource Group should exist. Changing this forces a new Resource Group to be created."
+  default = null
+}
 
+variable "assetprefix" {
+  type = string
+  description = "Your asset prefix for resources created"
+  default = null
+}
+
+variable "resource-group-name" { 
+  type = string
+  description = "(Required) The Name which should be used for this Resource Group. Changing this forces a new Resource Group to be created."
+  default = null
+}
+
+variable "project_name" {
+  type = string
+  description = "Your Cato Deployment Name Here"
+  default = null
+}
+
+variable "lan_subnet_id" { 
+  type = string
+  description = "(Required) LAN Subnet ID"
+  default = null
+}
+
+variable "admin_username" {
+  type = string
+  description = "Admin Username for the VM"
+  default = null
+}
+
+variable "admin_password" {
+  type = string
+  description = "Admin Password for the VM"
+  default = null
+}
+
+provider "azurerm" {
+	features {}
+}
+
+# Create Network Interfaces
+resource "azurerm_network_interface" "lan-nic" {
+  location            = var.location
+  name                = "${var.assetprefix}-Lan"
+  resource_group_name = var.resource-group-name
+  ip_configuration {
+    name                          = "LanIP"
+    private_ip_address_allocation = "Dynamic"
+    subnet_id                     = var.lan_subnet_id
+  }
+}
+
+# Create a Windows Virtual Machine
+resource "azurerm_virtual_machine" "vm" {
+  name                  = "demo-windows-vm"
+  location              = var.location
+  resource_group_name   = var.resource-group-name
+  network_interface_ids = [azurerm_network_interface.lan-nic.id]
+  vm_size               = "Standard_DS1_v2"
+
+  # Optional: Enable Managed Disks
+  storage_os_disk {
+    name              = "win-osdisk"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+
+  # Use the latest Windows Server 2019 Datacenter image
+  storage_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2019-Datacenter"
+    version   = "latest"
+  }
+
+  os_profile {
+    computer_name  = "demo-windows-vm"
+    admin_username = var.admin_username
+    admin_password = var.admin_password
+  }
+
+  os_profile_windows_config {
+    provision_vm_agent        = true
+    enable_automatic_upgrades = true
+  }
+
+  tags = {
+    environment = "Demo Windows Virtual Machine"
+  }
+}
+
+resource "azurerm_network_security_group" "windows" {
+  name                = "WindowsVMSecurityGroup"
+  location            = var.location
+  resource_group_name = var.resource-group-name
+
+  security_rule {
+    name                       = "Allow-RDP"
+    priority                   = 300
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "*"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  tags = {
+    environment = var.project_name
+  }
+}
+
+resource "azurerm_subnet_network_security_group_association" "windows" {
+  subnet_id                 = var.lan_subnet_id
+  network_security_group_id = azurerm_network_security_group.windows.id
+}
+```
+</details>
+
+### VPC, vSocket, and WindowsVM Module Usage
+
+<details>
+<summary>Project Variables</summary>
+
+### Project Variables Example
+
+In your current project working folder, add a `variables.tf` file with the following contents:
+
+```hcl
+variable cato_token {}
+
+variable "account_id" {
+  description = "Account ID"
+  type        = number
+  default	  = null
+}
+
+variable "location" { 
+  type = string
+  default = null
+}
+
+variable "project_name" {
+  type = string
+  description = "Your Cato Deployment Name Here"
+  default = null
+}
+
+variable "assetprefix" {
+  type = string
+  description = "Your asset prefix for resources created"
+  default = null
+}
+
+variable "site_description" {
+  type = string
+  description = "Site description"
+}
+
+variable "site_type" {
+  description = "The type of the site"
+  type        = string
+  default	 = "DATACENTER"
+  validation {
+    condition = contains(["DATACENTER","BRANCH","CLOUD_DC","HEADQUARTERS"], var.site_type)
+    error_message = "The site_type variable must be one of 'DATACENTER','BRANCH','CLOUD_DC','HEADQUARTERS'."
+  }
+}
+
+variable "vnet_prefix" {
+  type = string
+  description = <<EOT
+  	Choose a unique range for your new VPC that does not conflict with the rest of your Wide Area Network.
+    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
+	EOT
+}
+
+variable "subnet_range_mgmt" {
+  type = string
+  description = <<EOT
+    Choose a range within the VPC to use as the Management subnet. This subnet will be used initially to access the public internet and register your vSocket to the Cato Cloud.
+    The minimum subnet length to support High Availability is /28.
+    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
+	EOT
+}
+
+variable "subnet_range_wan" {
+  type = string
+  description = <<EOT
+    Choose a range within the VPC to use as the Public/WAN subnet. This subnet will be used to access the public internet and securely tunnel to the Cato Cloud.
+    The minimum subnet length to support High Availability is /28.
+    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
+	EOT
+}
+
+variable "subnet_range_lan" {
+  type = string
+  description = <<EOT
+    Choose a range within the VPC to use as the Private/LAN subnet. This subnet will host the target LAN interface of the vSocket so resources in the VPC (or AWS Region) can route to the Cato Cloud.
+    The minimum subnet length to support High Availability is /29.
+    The accepted input format is Standard CIDR Notation, e.g. X.X.X.X/X
+	EOT
+}
+
+variable "lan_ip" {
+	type = string
+  description = "Local IP Address of socket LAN interface"
+	default = null
+}
+```
+</details>
+
+In your current project working folder, add a `main.tf` file with the following contents:
+
+```hcl
+terraform {
+  required_providers {
+    cato-oss = {
+      source = "benekpy/cato-oss"
+    }
+  }
+  required_version = ">= 0.13"
+}
+
+## Create Azure Resource Group and Virtual Network
 module "vnet" {
   source = "./1-vnet"
   location = var.location
@@ -585,16 +814,34 @@ module "vnet" {
   vnet_prefix = var.vnet_prefix
 }
 
+## Create Cato SocketSite and Deploy vSocket
 module "vSocket" {
   source = "./2-vSocket"
+  cato_token = var.cato_token
+  account_id = var.account_id
+  site_description = var.site_description
+  site_type = var.site_type
+  project_name = var.project_name
+  vnet_prefix = var.vnet_prefix
+  lan_ip = var.lan_ip
   location = var.location
   assetprefix = var.assetprefix
   resource-group-name = module.vnet.resource-group-name
-  socketsite-serial = data.cato-oss_accountSnapshotSite.azure-site.info.sockets[0].serial
   mgmt-nic-id = module.vnet.mgmt-nic-id
   wan-nic-id = module.vnet.wan-nic-id
   lan-nic-id = module.vnet.lan-nic-id
 }
 
+## Create Windows VM on LAN
+module "WindowsVM" {
+  source = "./3-WindowsVM"
+  location = var.location
+  assetprefix = var.assetprefix
+  resource-group-name = module.vnet.resource-group-name
+  project_name = var.project_name
+  lan_subnet_id = module.vnet.lan_subnet_id
+  admin_username = "your-username-here"
+  admin_password = "your-password-here"
+}
 ```
 

@@ -30,7 +30,6 @@ site_id,name,range_type,subnet,local_ip,gateway,vlan
 ## Example Variables for Bulk Import
 
 ```hcl
-# DSFHUB Provider Required Variables
 variable "csv_file_path" {
 	description =  "Path to the csv file to import"
 	type = string
