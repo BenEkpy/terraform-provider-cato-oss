@@ -45,6 +45,16 @@ variable "project_name" {
   default = null
 }
 
+variable "dns_servers" { 
+  type = list(string)
+  default = [
+    "10.254.254.1", # Cato Cloud DNS
+    "168.63.129.16", # Azure DNS
+    "1.1.1.1",
+    "8.8.8.8"
+  ]
+}
+
 variable "subnet_range_mgmt" {
   type = string
   description = <<EOT
@@ -114,6 +124,11 @@ resource "azurerm_virtual_network" "vnet" {
   depends_on = [
     azurerm_resource_group.azure-rg
   ]
+}
+
+resource "azurerm_virtual_network_dns_servers" "dns_servers" {
+  virtual_network_id = azurerm_virtual_network.vnet.id
+  dns_servers        = var.dns_servers
 }
 
 resource "azurerm_subnet" "subnet-mgmt" {
@@ -618,10 +633,10 @@ provider "azurerm" {
 # Create Network Interfaces
 resource "azurerm_network_interface" "lan-nic" {
   location            = var.location
-  name                = "${var.assetprefix}-Lan"
+  name                = "${var.windows-assets-prefix}-LAN"
   resource_group_name = var.resource-group-name
   ip_configuration {
-    name                          = "LanIP"
+    name                          = "LAN-IP"
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = var.lan_subnet_id
   }
@@ -629,30 +644,21 @@ resource "azurerm_network_interface" "lan-nic" {
 
 # Create a Windows Virtual Machine
 resource "azurerm_virtual_machine" "vm" {
-  name                  = "demo-windows-vm"
+  name                  = var.windows-assets-prefix
   location              = var.location
   resource_group_name   = var.resource-group-name
   network_interface_ids = [azurerm_network_interface.lan-nic.id]
-  vm_size               = "Standard_DS1_v2"
-
-  # Optional: Enable Managed Disks
+  vm_size               = "Standard_D4S_v3"
+  
   storage_os_disk {
-    name              = "win-osdisk"
-    caching           = "ReadWrite"
-    create_option     = "FromImage"
-    managed_disk_type = "Standard_LRS"
-  }
-
-  # Use the latest Windows Server 2019 Datacenter image
-  storage_image_reference {
-    publisher = "MicrosoftWindowsServer"
-    offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
-    version   = "latest"
+    name            = azurerm_managed_disk.os_disk.name
+    managed_disk_id = azurerm_managed_disk.os_disk.id
+    create_option   = "fromImage"
+    os_type         = "Windows"
   }
 
   os_profile {
-    computer_name  = "demo-windows-vm"
+    computer_name  = var.windows-assets-prefix
     admin_username = var.admin_username
     admin_password = var.admin_password
   }
@@ -663,12 +669,34 @@ resource "azurerm_virtual_machine" "vm" {
   }
 
   tags = {
-    environment = "Demo Windows Virtual Machine"
+    environment = var.windows-assets-prefix
+  }
+}
+
+data "azurerm_platform_image" "windows_image" {
+  location  = var.location
+  publisher = "MicrosoftWindowsServer"
+  offer     = "WindowsServer"
+  sku       = "2019-Datacenter"
+  version   = "17763.6189.240811"
+}
+
+resource "azurerm_managed_disk" "os_disk" {
+  name                 = "win-osdisk"
+  location             = var.location
+  resource_group_name  = var.resource-group-name
+  storage_account_type = "Standard_LRS"
+  create_option        = "FromImage"
+  image_reference_id   = data.azurerm_platform_image.windows_image.id
+  disk_size_gb         = 127
+
+  tags = {
+    environment = var.windows-assets-prefix
   }
 }
 
 resource "azurerm_network_security_group" "windows" {
-  name                = "WindowsVMSecurityGroup"
+  name                = replace("${var.windows-assets-prefix}SecurityGroup", "-", "")
   location            = var.location
   resource_group_name = var.resource-group-name
 
@@ -685,7 +713,7 @@ resource "azurerm_network_security_group" "windows" {
   }
 
   tags = {
-    environment = var.project_name
+    environment = var.windows-assets-prefix
   }
 }
 
