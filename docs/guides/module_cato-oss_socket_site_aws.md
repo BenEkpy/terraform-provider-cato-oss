@@ -1,5 +1,5 @@
 ---
-subcategory: ""
+subcategory: "Example Modules"
 page_title: "AWS VPC Socket Module"
 description: |-
   Provides an combined example of creating a virtual socket site in Cato Management Application, and templates for creating a VPC and deploying a virtual socket instance in AWS.

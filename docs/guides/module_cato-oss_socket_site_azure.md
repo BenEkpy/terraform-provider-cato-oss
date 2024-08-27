@@ -1,5 +1,5 @@
 ---
-subcategory: ""
+subcategory: "Example Modules"
 page_title: "Azure VNET Socket Module"
 description: |-
   Provides an combined example of creating a virtual socket site in Cato Management Application, and templates for creating an Resource Group with underlying network resources and deploying a virtual socket instance in Azure.
