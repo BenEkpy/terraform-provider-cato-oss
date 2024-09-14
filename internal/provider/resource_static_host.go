@@ -124,6 +124,51 @@ func (r *staticHostResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *staticHostResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+
+	var state StaticHost
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// check if site exist, else remove resource
+	querySiteResult, err := r.client.catosdk.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("site"), nil, nil, nil, nil, []string{state.SiteId.ValueString()}, nil, nil, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Catov2 API error",
+			err.Error(),
+		)
+		return
+	}
+
+	if len(querySiteResult.EntityLookup.GetItems()) == 1 {
+		tflog.Warn(ctx, "site not found, static host resource removed")
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	// check if host exist before removing
+	queryHostResult, err := r.client.catosdk.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("host"), nil, nil, nil, nil, []string{state.Id.ValueString()}, nil, nil, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Catov2 API error",
+			err.Error(),
+		)
+		return
+	}
+
+	if len(queryHostResult.EntityLookup.GetItems()) == 1 {
+		tflog.Warn(ctx, "static host found, resource removed")
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (r *staticHostResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
