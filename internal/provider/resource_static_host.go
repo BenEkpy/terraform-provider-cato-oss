@@ -100,7 +100,7 @@ func (r *staticHostResource) Create(ctx context.Context, req resource.CreateRequ
 		"input": utils.InterfaceToJSONString(input),
 	})
 
-	body, err := r.client.catosdk.SiteAddStaticHost(ctx, plan.SiteId.ValueString(), input, r.client.AccountId)
+	body, err := r.client.catov2.SiteAddStaticHost(ctx, plan.SiteId.ValueString(), input, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Catov2 API error",
@@ -133,7 +133,7 @@ func (r *staticHostResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// check if site exist, else remove resource
-	querySiteResult, err := r.client.catosdk.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("site"), nil, nil, nil, nil, []string{state.SiteId.ValueString()}, nil, nil, nil)
+	querySiteResult, err := r.client.catov2.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("site"), nil, nil, nil, nil, []string{state.SiteId.ValueString()}, nil, nil, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Catov2 API error",
@@ -149,7 +149,7 @@ func (r *staticHostResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// check if host exist before removing
-	queryHostResult, err := r.client.catosdk.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("host"), nil, nil, nil, nil, []string{state.Id.ValueString()}, nil, nil, nil)
+	queryHostResult, err := r.client.catov2.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("host"), nil, nil, nil, nil, []string{state.Id.ValueString()}, nil, nil, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Catov2 API error",
@@ -191,7 +191,7 @@ func (r *staticHostResource) Update(ctx context.Context, req resource.UpdateRequ
 		"input": utils.InterfaceToJSONString(input),
 	})
 
-	_, err := r.client.catosdk.SiteUpdateStaticHost(ctx, plan.Id.ValueString(), input, r.client.AccountId)
+	_, err := r.client.catov2.SiteUpdateStaticHost(ctx, plan.Id.ValueString(), input, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Catov2 API error",
@@ -216,7 +216,7 @@ func (r *staticHostResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	querySiteResult, err := r.client.catosdk.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("site"), nil, nil, nil, nil, []string{state.SiteId.ValueString()}, nil, nil, nil)
+	querySiteResult, err := r.client.catov2.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("site"), nil, nil, nil, nil, []string{state.SiteId.ValueString()}, nil, nil, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Catov2 API error",
@@ -228,7 +228,7 @@ func (r *staticHostResource) Delete(ctx context.Context, req resource.DeleteRequ
 	// check if site exist before removing
 	if len(querySiteResult.EntityLookup.GetItems()) == 1 {
 
-		queryHostResult, err := r.client.catosdk.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("host"), nil, nil, nil, nil, []string{state.Id.ValueString()}, nil, nil, nil)
+		queryHostResult, err := r.client.catov2.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("host"), nil, nil, nil, nil, []string{state.Id.ValueString()}, nil, nil, nil)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Catov2 API error",
@@ -240,7 +240,7 @@ func (r *staticHostResource) Delete(ctx context.Context, req resource.DeleteRequ
 		// check if host exist before removing
 		if len(queryHostResult.EntityLookup.GetItems()) == 1 {
 
-			_, err := r.client.catosdk.SiteRemoveStaticHost(ctx, state.Id.ValueString(), r.client.AccountId)
+			_, err := r.client.catov2.SiteRemoveStaticHost(ctx, state.Id.ValueString(), r.client.AccountId)
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Catov2 API error",
