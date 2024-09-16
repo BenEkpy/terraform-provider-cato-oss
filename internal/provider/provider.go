@@ -163,7 +163,7 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 func (p *catoProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewAccountSnapshotSiteDataSource,
-		NewInternetFwPolicyDataSource,
+		// NewInternetFwPolicyDataSource,
 	}
 }
 
@@ -172,8 +172,9 @@ func (p *catoProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewSocketSiteResource,
 		NewWanInterfaceResource,
 		NewAdminResource,
-		NewInternetFwPolicyResource,
-		NewSiteIpsecResource,
+		NewInternetFwRuleResource,
+		NewInternetFwSectionResource,
+		// NewSiteIpsecResource,
 		NewStaticHostResource,
 		NewNetworkRangeResource,
 	}
