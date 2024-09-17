@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/terraform-plugin-framework v1.11.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.13.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/routebyintuition/cato-go-sdk v0.0.0-20240911205201-da49afc0d738
+	github.com/routebyintuition/cato-go-sdk v0.1.1
 )
 
 require (
