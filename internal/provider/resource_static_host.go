@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	cato_models "github.com/routebyintuition/cato-go-sdk/models"
 )
@@ -25,14 +24,6 @@ func NewStaticHostResource() resource.Resource {
 
 type staticHostResource struct {
 	client *catoClientData
-}
-
-type StaticHost struct {
-	Id         types.String `tfsdk:"id"`
-	SiteId     types.String `tfsdk:"site_id"`
-	Name       types.String `tfsdk:"name"`
-	Ip         types.String `tfsdk:"ip"`
-	MacAddress types.String `tfsdk:"mac_address"`
 }
 
 func (r *staticHostResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -142,7 +133,7 @@ func (r *staticHostResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	if len(querySiteResult.EntityLookup.GetItems()) == 1 {
+	if len(querySiteResult.EntityLookup.GetItems()) != 1 {
 		tflog.Warn(ctx, "site not found, static host resource removed")
 		resp.State.RemoveResource(ctx)
 		return
@@ -158,7 +149,7 @@ func (r *staticHostResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	if len(queryHostResult.EntityLookup.GetItems()) == 1 {
+	if len(queryHostResult.EntityLookup.GetItems()) != 1 {
 		tflog.Warn(ctx, "static host found, resource removed")
 		resp.State.RemoveResource(ctx)
 		return
