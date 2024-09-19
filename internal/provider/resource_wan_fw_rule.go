@@ -20,23 +20,23 @@ import (
 )
 
 var (
-	_ resource.Resource              = &internetFwRuleResource{}
-	_ resource.ResourceWithConfigure = &internetFwRuleResource{}
+	_ resource.Resource              = &wanFwRuleResource{}
+	_ resource.ResourceWithConfigure = &wanFwRuleResource{}
 )
 
-func NewInternetFwRuleResource() resource.Resource {
-	return &internetFwRuleResource{}
+func NewWanFwRuleResource() resource.Resource {
+	return &wanFwRuleResource{}
 }
 
-type internetFwRuleResource struct {
+type wanFwRuleResource struct {
 	client *catoClientData
 }
 
-func (r *internetFwRuleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_if_rule"
+func (r *wanFwRuleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_wf_rule"
 }
 
-func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *wanFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"at": schema.SingleNestedAttribute{
@@ -376,6 +376,272 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 							},
 						},
 					},
+					"destination": schema.SingleNestedAttribute{
+						Required: false,
+						Optional: true,
+						Attributes: map[string]schema.Attribute{
+							"ip": schema.ListAttribute{
+								Description: "",
+								ElementType: types.StringType,
+								Required:    false,
+								Optional:    true,
+							},
+							"host": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.Expressions{
+													path.MatchRelative().AtParent().AtName("id"),
+												}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
+							},
+							"site": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.Expressions{
+													path.MatchRelative().AtParent().AtName("id"),
+												}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
+							},
+							"subnet": schema.ListAttribute{
+								ElementType: types.StringType,
+								Description: "",
+								Required:    false,
+								Optional:    true,
+							},
+							"ip_range": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"from": schema.StringAttribute{
+											Description: "",
+											Required:    true,
+											Optional:    false,
+										},
+										"to": schema.StringAttribute{
+											Description: "",
+											Required:    true,
+											Optional:    false,
+										},
+									},
+								},
+							},
+							"global_ip_range": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.Expressions{
+													path.MatchRelative().AtParent().AtName("id"),
+												}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
+							},
+							"network_interface": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.Expressions{
+													path.MatchRelative().AtParent().AtName("id"),
+												}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
+							},
+							"site_network_subnet": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.Expressions{
+													path.MatchRelative().AtParent().AtName("id"),
+												}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
+							},
+							"floating_subnet": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.Expressions{
+													path.MatchRelative().AtParent().AtName("id"),
+												}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
+							},
+							"user": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.Expressions{
+													path.MatchRelative().AtParent().AtName("id"),
+												}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
+							},
+							"users_group": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.Expressions{
+													path.MatchRelative().AtParent().AtName("id"),
+												}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
+							},
+							"group": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.Expressions{
+													path.MatchRelative().AtParent().AtName("id"),
+												}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
+							},
+							"system_group": schema.ListNestedAttribute{
+								Required: false,
+								Optional: true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.Expressions{
+													path.MatchRelative().AtParent().AtName("id"),
+												}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+									},
+								},
+							},
+						},
+					},
 					"connection_origin": schema.StringAttribute{
 						Description: "",
 						Optional:    true,
@@ -433,7 +699,7 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Optional:    true,
 						Required:    false,
 					},
-					"destination": schema.SingleNestedAttribute{
+					"application": schema.SingleNestedAttribute{
 						Optional: true,
 						Required: false,
 						Attributes: map[string]schema.Attribute{
@@ -553,29 +819,6 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 									},
 								},
 							},
-							"country": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"name": schema.StringAttribute{
-											Description: "",
-											Required:    false,
-											Optional:    true,
-											Validators: []validator.String{
-												stringvalidator.ConflictsWith(path.Expressions{
-													path.MatchRelative().AtParent().AtName("id"),
-												}...),
-											},
-										},
-										"id": schema.StringAttribute{
-											Description: "",
-											Required:    false,
-											Optional:    true,
-										},
-									},
-								},
-							},
 							"domain": schema.ListAttribute{
 								ElementType: types.StringType,
 								Description: "",
@@ -640,12 +883,6 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 										},
 									},
 								},
-							},
-							"remote_asn": schema.ListAttribute{
-								ElementType: types.StringType,
-								Description: "",
-								Required:    false,
-								Optional:    true,
 							},
 						},
 					},
@@ -714,6 +951,10 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						},
 					},
 					"action": schema.StringAttribute{
+						Description: "",
+						Required:    true,
+					},
+					"direction": schema.StringAttribute{
 						Description: "",
 						Required:    true,
 					},
@@ -1142,6 +1383,272 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 										},
 									},
 								},
+								"destination": schema.SingleNestedAttribute{
+									Required: false,
+									Optional: true,
+									Attributes: map[string]schema.Attribute{
+										"ip": schema.ListAttribute{
+											Description: "",
+											ElementType: types.StringType,
+											Required:    false,
+											Optional:    true,
+										},
+										"host": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"name": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+														Validators: []validator.String{
+															stringvalidator.ConflictsWith(path.Expressions{
+																path.MatchRelative().AtParent().AtName("id"),
+															}...),
+														},
+													},
+													"id": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+													},
+												},
+											},
+										},
+										"site": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"name": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+														Validators: []validator.String{
+															stringvalidator.ConflictsWith(path.Expressions{
+																path.MatchRelative().AtParent().AtName("id"),
+															}...),
+														},
+													},
+													"id": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+													},
+												},
+											},
+										},
+										"subnet": schema.ListAttribute{
+											ElementType: types.StringType,
+											Description: "",
+											Required:    false,
+											Optional:    true,
+										},
+										"ip_range": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"from": schema.StringAttribute{
+														Description: "",
+														Required:    true,
+														Optional:    false,
+													},
+													"to": schema.StringAttribute{
+														Description: "",
+														Required:    true,
+														Optional:    false,
+													},
+												},
+											},
+										},
+										"global_ip_range": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"name": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+														Validators: []validator.String{
+															stringvalidator.ConflictsWith(path.Expressions{
+																path.MatchRelative().AtParent().AtName("id"),
+															}...),
+														},
+													},
+													"id": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+													},
+												},
+											},
+										},
+										"network_interface": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"name": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+														Validators: []validator.String{
+															stringvalidator.ConflictsWith(path.Expressions{
+																path.MatchRelative().AtParent().AtName("id"),
+															}...),
+														},
+													},
+													"id": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+													},
+												},
+											},
+										},
+										"site_network_subnet": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"name": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+														Validators: []validator.String{
+															stringvalidator.ConflictsWith(path.Expressions{
+																path.MatchRelative().AtParent().AtName("id"),
+															}...),
+														},
+													},
+													"id": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+													},
+												},
+											},
+										},
+										"floating_subnet": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"name": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+														Validators: []validator.String{
+															stringvalidator.ConflictsWith(path.Expressions{
+																path.MatchRelative().AtParent().AtName("id"),
+															}...),
+														},
+													},
+													"id": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+													},
+												},
+											},
+										},
+										"user": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"name": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+														Validators: []validator.String{
+															stringvalidator.ConflictsWith(path.Expressions{
+																path.MatchRelative().AtParent().AtName("id"),
+															}...),
+														},
+													},
+													"id": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+													},
+												},
+											},
+										},
+										"users_group": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"name": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+														Validators: []validator.String{
+															stringvalidator.ConflictsWith(path.Expressions{
+																path.MatchRelative().AtParent().AtName("id"),
+															}...),
+														},
+													},
+													"id": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+													},
+												},
+											},
+										},
+										"group": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"name": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+														Validators: []validator.String{
+															stringvalidator.ConflictsWith(path.Expressions{
+																path.MatchRelative().AtParent().AtName("id"),
+															}...),
+														},
+													},
+													"id": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+													},
+												},
+											},
+										},
+										"system_group": schema.ListNestedAttribute{
+											Required: false,
+											Optional: true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"name": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+														Validators: []validator.String{
+															stringvalidator.ConflictsWith(path.Expressions{
+																path.MatchRelative().AtParent().AtName("id"),
+															}...),
+														},
+													},
+													"id": schema.StringAttribute{
+														Description: "",
+														Required:    false,
+														Optional:    true,
+													},
+												},
+											},
+										},
+									},
+								},
 								"country": schema.ListNestedAttribute{
 									Required: false,
 									Optional: true,
@@ -1177,7 +1684,7 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 									Optional:    true,
 									Required:    false,
 								},
-								"destination": schema.SingleNestedAttribute{
+								"application": schema.SingleNestedAttribute{
 									Optional: true,
 									Required: false,
 									Attributes: map[string]schema.Attribute{
@@ -1297,29 +1804,6 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 												},
 											},
 										},
-										"country": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"name": schema.StringAttribute{
-														Description: "",
-														Required:    false,
-														Optional:    true,
-														Validators: []validator.String{
-															stringvalidator.ConflictsWith(path.Expressions{
-																path.MatchRelative().AtParent().AtName("id"),
-															}...),
-														},
-													},
-													"id": schema.StringAttribute{
-														Description: "",
-														Required:    false,
-														Optional:    true,
-													},
-												},
-											},
-										},
 										"domain": schema.ListAttribute{
 											ElementType: types.StringType,
 											Description: "",
@@ -1384,12 +1868,6 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 													},
 												},
 											},
-										},
-										"remote_asn": schema.ListAttribute{
-											ElementType: types.StringType,
-											Description: "",
-											Required:    false,
-											Optional:    true,
 										},
 									},
 								},
@@ -1457,6 +1935,10 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 										},
 									},
 								},
+								"direction": schema.StringAttribute{
+									Description: "",
+									Required:    true,
+								},
 								"connection_origin": schema.StringAttribute{
 									Description: "",
 									Optional:    true,
@@ -1471,7 +1953,7 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 	}
 }
 
-func (r *internetFwRuleResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *wanFwRuleResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -1479,9 +1961,9 @@ func (r *internetFwRuleResource) Configure(_ context.Context, req resource.Confi
 	r.client = req.ProviderData.(*catoClientData)
 }
 
-func (r *internetFwRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *wanFwRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 
-	var plan InternetFirewallRule
+	var plan WanFirewallRule
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -1489,7 +1971,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 	}
 
 	//initiate input
-	input := cato_models.InternetFirewallAddRuleInput{}
+	input := cato_models.WanFirewallAddRuleInput{}
 
 	//setting at
 	if !plan.At.IsNull() {
@@ -1505,16 +1987,16 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 	// setting rule
 	if !plan.At.IsNull() {
 
-		input.Rule = &cato_models.InternetFirewallAddRuleDataInput{}
-		ruleInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule{}
+		input.Rule = &cato_models.WanFirewallAddRuleDataInput{}
+		ruleInput := Policy_Policy_WanFirewall_Policy_Rules_Rule{}
 		diags = plan.Rule.As(ctx, &ruleInput, basetypes.ObjectAsOptions{})
 		resp.Diagnostics.Append(diags...)
 
 		// setting source
 		if !ruleInput.Source.IsNull() {
 
-			input.Rule.Source = &cato_models.InternetFirewallSourceInput{}
-			sourceInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source{}
+			input.Rule.Source = &cato_models.WanFirewallSourceInput{}
+			sourceInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Source{}
 			diags = ruleInput.Source.As(ctx, &sourceInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
 
@@ -1536,7 +2018,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.Host.ElementsAs(ctx, &elementsSourceHostInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceHostInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Host
+				var itemSourceHostInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Host
 				for _, item := range elementsSourceHostInput {
 					diags = item.As(ctx, &itemSourceHostInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1563,7 +2045,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.Site.ElementsAs(ctx, &elementsSourceSiteInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceSiteInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Site
+				var itemSourceSiteInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Site
 				for _, item := range elementsSourceSiteInput {
 					diags = item.As(ctx, &itemSourceSiteInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1590,7 +2072,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.IPRange.ElementsAs(ctx, &elementsSourceIPRangeInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_IPRange
+				var itemSourceIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_IPRange
 				for _, item := range elementsSourceIPRangeInput {
 					diags = item.As(ctx, &itemSourceIPRangeInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1608,7 +2090,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.GlobalIPRange.ElementsAs(ctx, &elementsSourceGlobalIPRangeInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceGlobalIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_GlobalIPRange
+				var itemSourceGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_GlobalIPRange
 				for _, item := range elementsSourceGlobalIPRangeInput {
 					diags = item.As(ctx, &itemSourceGlobalIPRangeInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1635,7 +2117,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.NetworkInterface.ElementsAs(ctx, &elementsSourceNetworkInterfaceInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceNetworkInterfaceInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_NetworkInterface
+				var itemSourceNetworkInterfaceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_NetworkInterface
 				for _, item := range elementsSourceNetworkInterfaceInput {
 					diags = item.As(ctx, &itemSourceNetworkInterfaceInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1662,7 +2144,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.SiteNetworkSubnet.ElementsAs(ctx, &elementsSourceSiteNetworkSubnetInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceSiteNetworkSubnetInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_SiteNetworkSubnet
+				var itemSourceSiteNetworkSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_SiteNetworkSubnet
 				for _, item := range elementsSourceSiteNetworkSubnetInput {
 					diags = item.As(ctx, &itemSourceSiteNetworkSubnetInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1689,7 +2171,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.FloatingSubnet.ElementsAs(ctx, &elementsSourceFloatingSubnetInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceFloatingSubnetInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_FloatingSubnet
+				var itemSourceFloatingSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_FloatingSubnet
 				for _, item := range elementsSourceFloatingSubnetInput {
 					diags = item.As(ctx, &itemSourceFloatingSubnetInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1716,7 +2198,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.User.ElementsAs(ctx, &elementsSourceUserInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceUserInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_User
+				var itemSourceUserInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_User
 				for _, item := range elementsSourceUserInput {
 					diags = item.As(ctx, &itemSourceUserInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1743,7 +2225,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.UsersGroup.ElementsAs(ctx, &elementsSourceUsersGroupInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceUsersGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_UsersGroup
+				var itemSourceUsersGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_UsersGroup
 				for _, item := range elementsSourceUsersGroupInput {
 					diags = item.As(ctx, &itemSourceUsersGroupInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1770,7 +2252,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.Group.ElementsAs(ctx, &elementsSourceGroupInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Group
+				var itemSourceGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Group
 				for _, item := range elementsSourceGroupInput {
 					diags = item.As(ctx, &itemSourceGroupInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1797,7 +2279,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = sourceInput.SystemGroup.ElementsAs(ctx, &elementsSourceSystemGroupInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemSourceSystemGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_SystemGroup
+				var itemSourceSystemGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_SystemGroup
 				for _, item := range elementsSourceSystemGroupInput {
 					diags = item.As(ctx, &itemSourceSystemGroupInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1825,7 +2307,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 			diags = ruleInput.Country.ElementsAs(ctx, &elementsCountryInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemCountryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Country
+			var itemCountryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Country
 			for _, item := range elementsCountryInput {
 				diags = item.As(ctx, &itemCountryInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -1852,7 +2334,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 			diags = ruleInput.Device.ElementsAs(ctx, &elementsDeviceInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemDeviceInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Device
+			var itemDeviceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Device
 			for _, item := range elementsDeviceInput {
 				diags = item.As(ctx, &itemDeviceInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -1884,8 +2366,9 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 
 		// setting destination
 		if !ruleInput.Destination.IsNull() {
-			input.Rule.Destination = &cato_models.InternetFirewallDestinationInput{}
-			destinationInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination{}
+
+			input.Rule.Destination = &cato_models.WanFirewallDestinationInput{}
+			destinationInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination{}
 			diags = ruleInput.Destination.As(ctx, &destinationInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
 
@@ -1901,36 +2384,18 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				resp.Diagnostics.Append(diags...)
 			}
 
-			// setting destination domain
-			if !destinationInput.Domain.IsNull() {
-				diags = destinationInput.Domain.ElementsAs(ctx, &input.Rule.Destination.Domain, false)
-				resp.Diagnostics.Append(diags...)
-			}
-
-			// setting destination fqdn
-			if !destinationInput.Fqdn.IsNull() {
-				diags = destinationInput.Fqdn.ElementsAs(ctx, &input.Rule.Destination.Fqdn, false)
-				resp.Diagnostics.Append(diags...)
-			}
-
-			// setting destination remote asn
-			if !destinationInput.RemoteAsn.IsNull() {
-				diags = destinationInput.RemoteAsn.ElementsAs(ctx, &input.Rule.Destination.RemoteAsn, false)
-				resp.Diagnostics.Append(diags...)
-			}
-
-			// setting destination application
-			if !destinationInput.Application.IsNull() {
-				elementsDestinationApplicationInput := make([]types.Object, 0, len(destinationInput.Application.Elements()))
-				diags = destinationInput.Application.ElementsAs(ctx, &elementsDestinationApplicationInput, false)
+			// setting destination host
+			if !destinationInput.Host.IsNull() {
+				elementsDestinationHostInput := make([]types.Object, 0, len(destinationInput.Host.Elements()))
+				diags = destinationInput.Host.ElementsAs(ctx, &elementsDestinationHostInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemDestinationApplicationInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Application
-				for _, item := range elementsDestinationApplicationInput {
-					diags = item.As(ctx, &itemDestinationApplicationInput, basetypes.ObjectAsOptions{})
+				var itemDestinationHostInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Host
+				for _, item := range elementsDestinationHostInput {
+					diags = item.As(ctx, &itemDestinationHostInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
 
-					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationApplicationInput)
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationHostInput)
 					if err != nil {
 						resp.Diagnostics.AddError(
 							"Object Ref transformation failed",
@@ -1939,25 +2404,25 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						return
 					}
 
-					input.Rule.Destination.Application = append(input.Rule.Destination.Application, &cato_models.ApplicationRefInput{
+					input.Rule.Destination.Host = append(input.Rule.Destination.Host, &cato_models.HostRefInput{
 						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 						Input: ObjectRefOutput.Input,
 					})
 				}
 			}
 
-			// setting destination custom app
-			if !destinationInput.CustomApp.IsNull() {
-				elementsDestinationCustomAppInput := make([]types.Object, 0, len(destinationInput.CustomApp.Elements()))
-				diags = destinationInput.CustomApp.ElementsAs(ctx, &elementsDestinationCustomAppInput, false)
+			// setting destination site
+			if !destinationInput.Site.IsNull() {
+				elementsDestinationSiteInput := make([]types.Object, 0, len(destinationInput.Site.Elements()))
+				diags = destinationInput.Site.ElementsAs(ctx, &elementsDestinationSiteInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemDestinationCustomAppInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomApp
-				for _, item := range elementsDestinationCustomAppInput {
-					diags = item.As(ctx, &itemDestinationCustomAppInput, basetypes.ObjectAsOptions{})
+				var itemDestinationSiteInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Site
+				for _, item := range elementsDestinationSiteInput {
+					diags = item.As(ctx, &itemDestinationSiteInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
 
-					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCustomAppInput)
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSiteInput)
 					if err != nil {
 						resp.Diagnostics.AddError(
 							"Object Ref transformation failed",
@@ -1966,7 +2431,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						return
 					}
 
-					input.Rule.Destination.CustomApp = append(input.Rule.Destination.CustomApp, &cato_models.CustomApplicationRefInput{
+					input.Rule.Destination.Site = append(input.Rule.Destination.Site, &cato_models.SiteRefInput{
 						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 						Input: ObjectRefOutput.Input,
 					})
@@ -1979,7 +2444,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = destinationInput.IPRange.ElementsAs(ctx, &elementsDestinationIPRangeInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemDestinationIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_IPRange
+				var itemDestinationIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_IPRange
 				for _, item := range elementsDestinationIPRangeInput {
 					diags = item.As(ctx, &itemDestinationIPRangeInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -1997,7 +2462,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				diags = destinationInput.GlobalIPRange.ElementsAs(ctx, &elementsDestinationGlobalIPRangeInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemDestinationGlobalIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_GlobalIPRange
+				var itemDestinationGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_GlobalIPRange
 				for _, item := range elementsDestinationGlobalIPRangeInput {
 					diags = item.As(ctx, &itemDestinationGlobalIPRangeInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -2005,7 +2470,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationGlobalIPRangeInput)
 					if err != nil {
 						resp.Diagnostics.AddError(
-							"Object Ref transformation failed",
+							"Object Ref transformation failed for",
 							err.Error(),
 						)
 						return
@@ -2018,18 +2483,18 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				}
 			}
 
-			// setting destination app category
-			if !destinationInput.AppCategory.IsNull() {
-				elementsDestinationAppCategoryInput := make([]types.Object, 0, len(destinationInput.AppCategory.Elements()))
-				diags = destinationInput.AppCategory.ElementsAs(ctx, &elementsDestinationAppCategoryInput, false)
+			// setting destination network interface
+			if !destinationInput.NetworkInterface.IsNull() {
+				elementsDestinationNetworkInterfaceInput := make([]types.Object, 0, len(destinationInput.NetworkInterface.Elements()))
+				diags = destinationInput.NetworkInterface.ElementsAs(ctx, &elementsDestinationNetworkInterfaceInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemDestinationAppCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_AppCategory
-				for _, item := range elementsDestinationAppCategoryInput {
-					diags = item.As(ctx, &itemDestinationAppCategoryInput, basetypes.ObjectAsOptions{})
+				var itemDestinationNetworkInterfaceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_NetworkInterface
+				for _, item := range elementsDestinationNetworkInterfaceInput {
+					diags = item.As(ctx, &itemDestinationNetworkInterfaceInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
 
-					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationAppCategoryInput)
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationNetworkInterfaceInput)
 					if err != nil {
 						resp.Diagnostics.AddError(
 							"Object Ref transformation failed",
@@ -2038,25 +2503,25 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						return
 					}
 
-					input.Rule.Destination.AppCategory = append(input.Rule.Destination.AppCategory, &cato_models.ApplicationCategoryRefInput{
+					input.Rule.Destination.NetworkInterface = append(input.Rule.Destination.NetworkInterface, &cato_models.NetworkInterfaceRefInput{
 						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 						Input: ObjectRefOutput.Input,
 					})
 				}
 			}
 
-			// setting destination custom app category
-			if !destinationInput.CustomCategory.IsNull() {
-				elementsDestinationCustomCategoryInput := make([]types.Object, 0, len(destinationInput.CustomCategory.Elements()))
-				diags = destinationInput.CustomCategory.ElementsAs(ctx, &elementsDestinationCustomCategoryInput, false)
+			// setting destination site network subnet
+			if !destinationInput.SiteNetworkSubnet.IsNull() {
+				elementsDestinationSiteNetworkSubnetInput := make([]types.Object, 0, len(destinationInput.SiteNetworkSubnet.Elements()))
+				diags = destinationInput.SiteNetworkSubnet.ElementsAs(ctx, &elementsDestinationSiteNetworkSubnetInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemDestinationCustomCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomCategory
-				for _, item := range elementsDestinationCustomCategoryInput {
-					diags = item.As(ctx, &itemDestinationCustomCategoryInput, basetypes.ObjectAsOptions{})
+				var itemDestinationSiteNetworkSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_SiteNetworkSubnet
+				for _, item := range elementsDestinationSiteNetworkSubnetInput {
+					diags = item.As(ctx, &itemDestinationSiteNetworkSubnetInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
 
-					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCustomCategoryInput)
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSiteNetworkSubnetInput)
 					if err != nil {
 						resp.Diagnostics.AddError(
 							"Object Ref transformation failed",
@@ -2065,25 +2530,25 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						return
 					}
 
-					input.Rule.Destination.CustomCategory = append(input.Rule.Destination.CustomCategory, &cato_models.CustomCategoryRefInput{
+					input.Rule.Destination.SiteNetworkSubnet = append(input.Rule.Destination.SiteNetworkSubnet, &cato_models.SiteNetworkSubnetRefInput{
 						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 						Input: ObjectRefOutput.Input,
 					})
 				}
 			}
 
-			// setting destination sanctionned apps category
-			if !destinationInput.SanctionedAppsCategory.IsNull() {
-				elementsDestinationSanctionedAppsCategoryInput := make([]types.Object, 0, len(destinationInput.SanctionedAppsCategory.Elements()))
-				diags = destinationInput.SanctionedAppsCategory.ElementsAs(ctx, &elementsDestinationSanctionedAppsCategoryInput, false)
+			// setting destination floating subnet
+			if !destinationInput.FloatingSubnet.IsNull() {
+				elementsDestinationFloatingSubnetInput := make([]types.Object, 0, len(destinationInput.FloatingSubnet.Elements()))
+				diags = destinationInput.FloatingSubnet.ElementsAs(ctx, &elementsDestinationFloatingSubnetInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemDestinationSanctionedAppsCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_SanctionedAppsCategory
-				for _, item := range elementsDestinationSanctionedAppsCategoryInput {
-					diags = item.As(ctx, &itemDestinationSanctionedAppsCategoryInput, basetypes.ObjectAsOptions{})
+				var itemDestinationFloatingSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_FloatingSubnet
+				for _, item := range elementsDestinationFloatingSubnetInput {
+					diags = item.As(ctx, &itemDestinationFloatingSubnetInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
 
-					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSanctionedAppsCategoryInput)
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationFloatingSubnetInput)
 					if err != nil {
 						resp.Diagnostics.AddError(
 							"Object Ref transformation failed",
@@ -2092,25 +2557,25 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						return
 					}
 
-					input.Rule.Destination.SanctionedAppsCategory = append(input.Rule.Destination.SanctionedAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
+					input.Rule.Destination.FloatingSubnet = append(input.Rule.Destination.FloatingSubnet, &cato_models.FloatingSubnetRefInput{
 						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 						Input: ObjectRefOutput.Input,
 					})
 				}
 			}
 
-			// setting destination country
-			if !destinationInput.Country.IsNull() {
-				elementsDestinationCountryInput := make([]types.Object, 0, len(destinationInput.Country.Elements()))
-				diags = destinationInput.Country.ElementsAs(ctx, &elementsDestinationCountryInput, false)
+			// setting destination user
+			if !destinationInput.User.IsNull() {
+				elementsDestinationUserInput := make([]types.Object, 0, len(destinationInput.User.Elements()))
+				diags = destinationInput.User.ElementsAs(ctx, &elementsDestinationUserInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemDestinationCountryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Country
-				for _, item := range elementsDestinationCountryInput {
-					diags = item.As(ctx, &itemDestinationCountryInput, basetypes.ObjectAsOptions{})
+				var itemDestinationUserInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_User
+				for _, item := range elementsDestinationUserInput {
+					diags = item.As(ctx, &itemDestinationUserInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
 
-					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCountryInput)
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationUserInput)
 					if err != nil {
 						resp.Diagnostics.AddError(
 							"Object Ref transformation failed",
@@ -2119,7 +2584,300 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						return
 					}
 
-					input.Rule.Destination.Country = append(input.Rule.Destination.Country, &cato_models.CountryRefInput{
+					input.Rule.Destination.User = append(input.Rule.Destination.User, &cato_models.UserRefInput{
+						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+						Input: ObjectRefOutput.Input,
+					})
+				}
+			}
+
+			// setting destination users group
+			if !destinationInput.UsersGroup.IsNull() {
+				elementsDestinationUsersGroupInput := make([]types.Object, 0, len(destinationInput.UsersGroup.Elements()))
+				diags = destinationInput.UsersGroup.ElementsAs(ctx, &elementsDestinationUsersGroupInput, false)
+				resp.Diagnostics.Append(diags...)
+
+				var itemDestinationUsersGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_UsersGroup
+				for _, item := range elementsDestinationUsersGroupInput {
+					diags = item.As(ctx, &itemDestinationUsersGroupInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationUsersGroupInput)
+					if err != nil {
+						resp.Diagnostics.AddError(
+							"Object Ref transformation failed",
+							err.Error(),
+						)
+						return
+					}
+
+					input.Rule.Destination.UsersGroup = append(input.Rule.Destination.UsersGroup, &cato_models.UsersGroupRefInput{
+						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+						Input: ObjectRefOutput.Input,
+					})
+				}
+			}
+
+			// setting destination group
+			if !destinationInput.Group.IsNull() {
+				elementsDestinationGroupInput := make([]types.Object, 0, len(destinationInput.Group.Elements()))
+				diags = destinationInput.Group.ElementsAs(ctx, &elementsDestinationGroupInput, false)
+				resp.Diagnostics.Append(diags...)
+
+				var itemDestinationGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Group
+				for _, item := range elementsDestinationGroupInput {
+					diags = item.As(ctx, &itemDestinationGroupInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationGroupInput)
+					if err != nil {
+						resp.Diagnostics.AddError(
+							"Object Ref transformation failed",
+							err.Error(),
+						)
+						return
+					}
+
+					input.Rule.Destination.Group = append(input.Rule.Destination.Group, &cato_models.GroupRefInput{
+						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+						Input: ObjectRefOutput.Input,
+					})
+				}
+			}
+
+			// setting destination system group
+			if !destinationInput.SystemGroup.IsNull() {
+				elementsDestinationSystemGroupInput := make([]types.Object, 0, len(destinationInput.SystemGroup.Elements()))
+				diags = destinationInput.SystemGroup.ElementsAs(ctx, &elementsDestinationSystemGroupInput, false)
+				resp.Diagnostics.Append(diags...)
+
+				var itemDestinationSystemGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_SystemGroup
+				for _, item := range elementsDestinationSystemGroupInput {
+					diags = item.As(ctx, &itemDestinationSystemGroupInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSystemGroupInput)
+					if err != nil {
+						resp.Diagnostics.AddError(
+							"Object Ref transformation failed",
+							err.Error(),
+						)
+						return
+					}
+
+					input.Rule.Destination.SystemGroup = append(input.Rule.Destination.SystemGroup, &cato_models.SystemGroupRefInput{
+						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+						Input: ObjectRefOutput.Input,
+					})
+				}
+			}
+		}
+
+		// setting application
+		if !ruleInput.Application.IsNull() {
+			input.Rule.Application = &cato_models.WanFirewallApplicationInput{}
+			applicationInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Application{}
+			diags = ruleInput.Application.As(ctx, &applicationInput, basetypes.ObjectAsOptions{})
+			resp.Diagnostics.Append(diags...)
+
+			// setting application IP
+			if !applicationInput.IP.IsNull() {
+				diags = applicationInput.IP.ElementsAs(ctx, &input.Rule.Application.IP, false)
+				resp.Diagnostics.Append(diags...)
+			}
+
+			// setting application subnet
+			if !applicationInput.Subnet.IsNull() {
+				diags = applicationInput.Subnet.ElementsAs(ctx, &input.Rule.Application.Subnet, false)
+				resp.Diagnostics.Append(diags...)
+			}
+
+			// setting application domain
+			if !applicationInput.Domain.IsNull() {
+				diags = applicationInput.Domain.ElementsAs(ctx, &input.Rule.Application.Domain, false)
+				resp.Diagnostics.Append(diags...)
+			}
+
+			// setting application fqdn
+			if !applicationInput.Fqdn.IsNull() {
+				diags = applicationInput.Fqdn.ElementsAs(ctx, &input.Rule.Application.Fqdn, false)
+				resp.Diagnostics.Append(diags...)
+			}
+
+			// setting application application
+			if !applicationInput.Application.IsNull() {
+				elementsApplicationApplicationInput := make([]types.Object, 0, len(applicationInput.Application.Elements()))
+				diags = applicationInput.Application.ElementsAs(ctx, &elementsApplicationApplicationInput, false)
+				resp.Diagnostics.Append(diags...)
+
+				var itemApplicationApplicationInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_Application
+				for _, item := range elementsApplicationApplicationInput {
+					diags = item.As(ctx, &itemApplicationApplicationInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationApplicationInput)
+					if err != nil {
+						resp.Diagnostics.AddError(
+							"Object Ref transformation failed",
+							err.Error(),
+						)
+						return
+					}
+
+					input.Rule.Application.Application = append(input.Rule.Application.Application, &cato_models.ApplicationRefInput{
+						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+						Input: ObjectRefOutput.Input,
+					})
+				}
+			}
+
+			// setting application custom app
+			if !applicationInput.CustomApp.IsNull() {
+				elementsApplicationCustomAppInput := make([]types.Object, 0, len(applicationInput.CustomApp.Elements()))
+				diags = applicationInput.CustomApp.ElementsAs(ctx, &elementsApplicationCustomAppInput, false)
+				resp.Diagnostics.Append(diags...)
+
+				var itemApplicationCustomAppInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_CustomApp
+				for _, item := range elementsApplicationCustomAppInput {
+					diags = item.As(ctx, &itemApplicationCustomAppInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationCustomAppInput)
+					if err != nil {
+						resp.Diagnostics.AddError(
+							"Object Ref transformation failed",
+							err.Error(),
+						)
+						return
+					}
+
+					input.Rule.Application.CustomApp = append(input.Rule.Application.CustomApp, &cato_models.CustomApplicationRefInput{
+						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+						Input: ObjectRefOutput.Input,
+					})
+				}
+			}
+
+			// setting application ip range
+			if !applicationInput.IPRange.IsNull() {
+				elementsApplicationIPRangeInput := make([]types.Object, 0, len(applicationInput.IPRange.Elements()))
+				diags = applicationInput.IPRange.ElementsAs(ctx, &elementsApplicationIPRangeInput, false)
+				resp.Diagnostics.Append(diags...)
+
+				var itemApplicationIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_IPRange
+				for _, item := range elementsApplicationIPRangeInput {
+					diags = item.As(ctx, &itemApplicationIPRangeInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					input.Rule.Application.IPRange = append(input.Rule.Application.IPRange, &cato_models.IPAddressRangeInput{
+						From: itemApplicationIPRangeInput.From.ValueString(),
+						To:   itemApplicationIPRangeInput.To.ValueString(),
+					})
+				}
+			}
+
+			// setting application global ip range
+			if !applicationInput.GlobalIPRange.IsNull() {
+				elementsApplicationGlobalIPRangeInput := make([]types.Object, 0, len(applicationInput.GlobalIPRange.Elements()))
+				diags = applicationInput.GlobalIPRange.ElementsAs(ctx, &elementsApplicationGlobalIPRangeInput, false)
+				resp.Diagnostics.Append(diags...)
+
+				var itemApplicationGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_GlobalIPRange
+				for _, item := range elementsApplicationGlobalIPRangeInput {
+					diags = item.As(ctx, &itemApplicationGlobalIPRangeInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationGlobalIPRangeInput)
+					if err != nil {
+						resp.Diagnostics.AddError(
+							"Object Ref transformation failed",
+							err.Error(),
+						)
+						return
+					}
+
+					input.Rule.Application.GlobalIPRange = append(input.Rule.Application.GlobalIPRange, &cato_models.GlobalIPRangeRefInput{
+						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+						Input: ObjectRefOutput.Input,
+					})
+				}
+			}
+
+			// setting application app category
+			if !applicationInput.AppCategory.IsNull() {
+				elementsApplicationAppCategoryInput := make([]types.Object, 0, len(applicationInput.AppCategory.Elements()))
+				diags = applicationInput.AppCategory.ElementsAs(ctx, &elementsApplicationAppCategoryInput, false)
+				resp.Diagnostics.Append(diags...)
+
+				var itemApplicationAppCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_AppCategory
+				for _, item := range elementsApplicationAppCategoryInput {
+					diags = item.As(ctx, &itemApplicationAppCategoryInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationAppCategoryInput)
+					if err != nil {
+						resp.Diagnostics.AddError(
+							"Object Ref transformation failed",
+							err.Error(),
+						)
+						return
+					}
+
+					input.Rule.Application.AppCategory = append(input.Rule.Application.AppCategory, &cato_models.ApplicationCategoryRefInput{
+						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+						Input: ObjectRefOutput.Input,
+					})
+				}
+			}
+
+			// setting application custom app category
+			if !applicationInput.CustomCategory.IsNull() {
+				elementsApplicationCustomCategoryInput := make([]types.Object, 0, len(applicationInput.CustomCategory.Elements()))
+				diags = applicationInput.CustomCategory.ElementsAs(ctx, &elementsApplicationCustomCategoryInput, false)
+				resp.Diagnostics.Append(diags...)
+
+				var itemApplicationCustomCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_CustomCategory
+				for _, item := range elementsApplicationCustomCategoryInput {
+					diags = item.As(ctx, &itemApplicationCustomCategoryInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationCustomCategoryInput)
+					if err != nil {
+						resp.Diagnostics.AddError(
+							"Object Ref transformation failed",
+							err.Error(),
+						)
+						return
+					}
+
+					input.Rule.Application.CustomCategory = append(input.Rule.Application.CustomCategory, &cato_models.CustomCategoryRefInput{
+						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+						Input: ObjectRefOutput.Input,
+					})
+				}
+			}
+
+			// setting application sanctionned apps category
+			if !applicationInput.SanctionedAppsCategory.IsNull() {
+				elementsApplicationSanctionedAppsCategoryInput := make([]types.Object, 0, len(applicationInput.SanctionedAppsCategory.Elements()))
+				diags = applicationInput.SanctionedAppsCategory.ElementsAs(ctx, &elementsApplicationSanctionedAppsCategoryInput, false)
+				resp.Diagnostics.Append(diags...)
+
+				var itemApplicationSanctionedAppsCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_SanctionedAppsCategory
+				for _, item := range elementsApplicationSanctionedAppsCategoryInput {
+					diags = item.As(ctx, &itemApplicationSanctionedAppsCategoryInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationSanctionedAppsCategoryInput)
+					if err != nil {
+						resp.Diagnostics.AddError(
+							"Object Ref transformation failed",
+							err.Error(),
+						)
+						return
+					}
+
+					input.Rule.Application.SanctionedAppsCategory = append(input.Rule.Application.SanctionedAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
 						By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 						Input: ObjectRefOutput.Input,
 					})
@@ -2129,8 +2887,8 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 
 		// setting service
 		if !ruleInput.Service.IsNull() {
-			input.Rule.Service = &cato_models.InternetFirewallServiceTypeInput{}
-			serviceInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service{}
+			input.Rule.Service = &cato_models.WanFirewallServiceTypeInput{}
+			serviceInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Service{}
 			diags = ruleInput.Service.As(ctx, &serviceInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
 			if resp.Diagnostics.HasError() {
@@ -2146,7 +2904,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 					return
 				}
 
-				var itemServiceStandardInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Standard
+				var itemServiceStandardInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Standard
 				for _, item := range elementsServiceStandardInput {
 					diags = item.As(ctx, &itemServiceStandardInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -2176,7 +2934,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 					return
 				}
 
-				var itemServiceCustomInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Custom
+				var itemServiceCustomInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Custom
 				for _, item := range elementsServiceCustomInput {
 					diags = item.As(ctx, &itemServiceCustomInput, basetypes.ObjectAsOptions{})
 
@@ -2200,7 +2958,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 
 					// setting service custom port range
 					if !itemServiceCustomInput.PortRange.IsNull() {
-						var itemPortRange Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Custom_PortRange
+						var itemPortRange Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Custom_PortRange
 						diags = itemServiceCustomInput.PortRange.As(ctx, &itemPortRange, basetypes.ObjectAsOptions{})
 
 						inputPortRange := cato_models.PortRangeInput{
@@ -2224,7 +2982,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				Event: &cato_models.PolicyRuleTrackingEventInput{},
 			}
 
-			trackingInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking{}
+			trackingInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking{}
 			diags = ruleInput.Tracking.As(ctx, &trackingInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
 			if resp.Diagnostics.HasError() {
@@ -2232,7 +2990,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 			}
 
 			// setting tracking event
-			trackingEventInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking_Event{}
+			trackingEventInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Event{}
 			diags = trackingInput.Event.As(ctx, &trackingEventInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
 			if resp.Diagnostics.HasError() {
@@ -2248,7 +3006,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 
 			if !trackingInput.Alert.IsNull() {
 
-				trackingAlertInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking_Alert{}
+				trackingAlertInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Alert{}
 				diags = trackingInput.Alert.As(ctx, &trackingAlertInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 				if resp.Diagnostics.HasError() {
@@ -2266,7 +3024,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						return
 					}
 
-					var itemAlertSubscriptionGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
+					var itemAlertSubscriptionGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
 					for _, item := range elementsAlertSubscriptionGroupInput {
 						diags = item.As(ctx, &itemAlertSubscriptionGroupInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -2297,7 +3055,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 							return
 						}
 
-						var itemAlertWebHookInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
+						var itemAlertWebHookInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
 						for _, item := range elementsAlertWebHookInput {
 							diags = item.As(ctx, &itemAlertWebHookInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2328,7 +3086,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						return
 					}
 
-					var itemAlertMailingListInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
+					var itemAlertMailingListInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
 					for _, item := range elementsAlertMailingListInput {
 						diags = item.As(ctx, &itemAlertMailingListInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -2358,7 +3116,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 
 		if !ruleInput.Schedule.IsNull() {
 
-			scheduleInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Schedule{}
+			scheduleInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Schedule{}
 			diags = ruleInput.Schedule.As(ctx, &scheduleInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
 			if resp.Diagnostics.HasError() {
@@ -2371,7 +3129,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 			if !scheduleInput.CustomTimeframe.IsNull() {
 				input.Rule.Schedule.CustomTimeframe = &cato_models.PolicyCustomTimeframeInput{}
 
-				customeTimeFrameInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Schedule_CustomTimeframe{}
+				customeTimeFrameInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Schedule_CustomTimeframe{}
 				diags = scheduleInput.CustomTimeframe.As(ctx, &customeTimeFrameInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 				if resp.Diagnostics.HasError() {
@@ -2387,7 +3145,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 			if !scheduleInput.CustomRecurring.IsNull() {
 				input.Rule.Schedule.CustomRecurring = &cato_models.PolicyCustomRecurringInput{}
 
-				customRecurringInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Schedule_CustomRecurring{}
+				customRecurringInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Schedule_CustomRecurring{}
 				diags = scheduleInput.CustomRecurring.As(ctx, &customRecurringInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 				if resp.Diagnostics.HasError() {
@@ -2413,16 +3171,19 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 			resp.Diagnostics.Append(diags...)
 
 			// loop over exceptions
-			var itemExceptionsInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Exceptions
+			var itemExceptionsInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Exceptions
 			for _, item := range elementsExceptionsInput {
 
-				exceptionInput := cato_models.InternetFirewallRuleExceptionInput{}
+				exceptionInput := cato_models.WanFirewallRuleExceptionInput{}
 
 				diags = item.As(ctx, &itemExceptionsInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 
 				// setting exception name
 				exceptionInput.Name = itemExceptionsInput.Name.ValueString()
+
+				// setting exception direction
+				exceptionInput.Direction = cato_models.WanFirewallDirectionEnum(itemExceptionsInput.Direction.ValueString())
 
 				// setting exception connection origin
 				if !itemExceptionsInput.ConnectionOrigin.IsNull() {
@@ -2434,8 +3195,8 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				// setting source
 				if !itemExceptionsInput.Source.IsNull() {
 
-					exceptionInput.Source = &cato_models.InternetFirewallSourceInput{}
-					sourceInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source{}
+					exceptionInput.Source = &cato_models.WanFirewallSourceInput{}
+					sourceInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Source{}
 					diags = itemExceptionsInput.Source.As(ctx, &sourceInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
 
@@ -2457,7 +3218,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.Host.ElementsAs(ctx, &elementsSourceHostInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceHostInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Host
+						var itemSourceHostInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Host
 						for _, item := range elementsSourceHostInput {
 							diags = item.As(ctx, &itemSourceHostInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2484,7 +3245,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.Site.ElementsAs(ctx, &elementsSourceSiteInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceSiteInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Site
+						var itemSourceSiteInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Site
 						for _, item := range elementsSourceSiteInput {
 							diags = item.As(ctx, &itemSourceSiteInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2511,7 +3272,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.IPRange.ElementsAs(ctx, &elementsSourceIPRangeInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_IPRange
+						var itemSourceIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_IPRange
 						for _, item := range elementsSourceIPRangeInput {
 							diags = item.As(ctx, &itemSourceIPRangeInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2529,7 +3290,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.GlobalIPRange.ElementsAs(ctx, &elementsSourceGlobalIPRangeInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceGlobalIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_GlobalIPRange
+						var itemSourceGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_GlobalIPRange
 						for _, item := range elementsSourceGlobalIPRangeInput {
 							diags = item.As(ctx, &itemSourceGlobalIPRangeInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2556,7 +3317,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.NetworkInterface.ElementsAs(ctx, &elementsSourceNetworkInterfaceInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceNetworkInterfaceInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_NetworkInterface
+						var itemSourceNetworkInterfaceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_NetworkInterface
 						for _, item := range elementsSourceNetworkInterfaceInput {
 							diags = item.As(ctx, &itemSourceNetworkInterfaceInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2583,7 +3344,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.SiteNetworkSubnet.ElementsAs(ctx, &elementsSourceSiteNetworkSubnetInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceSiteNetworkSubnetInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_SiteNetworkSubnet
+						var itemSourceSiteNetworkSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_SiteNetworkSubnet
 						for _, item := range elementsSourceSiteNetworkSubnetInput {
 							diags = item.As(ctx, &itemSourceSiteNetworkSubnetInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2610,7 +3371,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.FloatingSubnet.ElementsAs(ctx, &elementsSourceFloatingSubnetInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceFloatingSubnetInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_FloatingSubnet
+						var itemSourceFloatingSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_FloatingSubnet
 						for _, item := range elementsSourceFloatingSubnetInput {
 							diags = item.As(ctx, &itemSourceFloatingSubnetInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2637,7 +3398,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.User.ElementsAs(ctx, &elementsSourceUserInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceUserInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_User
+						var itemSourceUserInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_User
 						for _, item := range elementsSourceUserInput {
 							diags = item.As(ctx, &itemSourceUserInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2664,7 +3425,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.UsersGroup.ElementsAs(ctx, &elementsSourceUsersGroupInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceUsersGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_UsersGroup
+						var itemSourceUsersGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_UsersGroup
 						for _, item := range elementsSourceUsersGroupInput {
 							diags = item.As(ctx, &itemSourceUsersGroupInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2691,7 +3452,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.Group.ElementsAs(ctx, &elementsSourceGroupInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Group
+						var itemSourceGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Group
 						for _, item := range elementsSourceGroupInput {
 							diags = item.As(ctx, &itemSourceGroupInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2718,7 +3479,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = sourceInput.SystemGroup.ElementsAs(ctx, &elementsSourceSystemGroupInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemSourceSystemGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_SystemGroup
+						var itemSourceSystemGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_SystemGroup
 						for _, item := range elementsSourceSystemGroupInput {
 							diags = item.As(ctx, &itemSourceSystemGroupInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2748,7 +3509,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 					diags = itemExceptionsInput.Country.ElementsAs(ctx, &elementsCountryInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemCountryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Country
+					var itemCountryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Country
 					for _, item := range elementsCountryInput {
 						diags = item.As(ctx, &itemCountryInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -2777,7 +3538,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 					diags = itemExceptionsInput.Device.ElementsAs(ctx, &elementsDeviceInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemDeviceInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Device
+					var itemDeviceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Device
 					for _, item := range elementsDeviceInput {
 						diags = item.As(ctx, &itemDeviceInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -2810,8 +3571,8 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				// setting destination
 				if !itemExceptionsInput.Destination.IsNull() {
 
-					exceptionInput.Destination = &cato_models.InternetFirewallDestinationInput{}
-					destinationInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination{}
+					exceptionInput.Destination = &cato_models.WanFirewallDestinationInput{}
+					destinationInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination{}
 					diags = itemExceptionsInput.Destination.As(ctx, &destinationInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
 
@@ -2827,36 +3588,18 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						resp.Diagnostics.Append(diags...)
 					}
 
-					// setting destination domain
-					if !destinationInput.Domain.IsNull() {
-						diags = destinationInput.Domain.ElementsAs(ctx, &exceptionInput.Destination.Domain, false)
-						resp.Diagnostics.Append(diags...)
-					}
-
-					// setting destination fqdn
-					if !destinationInput.Fqdn.IsNull() {
-						diags = destinationInput.Fqdn.ElementsAs(ctx, &exceptionInput.Destination.Fqdn, false)
-						resp.Diagnostics.Append(diags...)
-					}
-
-					// setting destination remote asn
-					if !destinationInput.RemoteAsn.IsNull() {
-						diags = destinationInput.RemoteAsn.ElementsAs(ctx, &exceptionInput.Destination.RemoteAsn, false)
-						resp.Diagnostics.Append(diags...)
-					}
-
-					// setting destination application
-					if !destinationInput.Application.IsNull() {
-						elementsDestinationApplicationInput := make([]types.Object, 0, len(destinationInput.Application.Elements()))
-						diags = destinationInput.Application.ElementsAs(ctx, &elementsDestinationApplicationInput, false)
+					// setting destination host
+					if !destinationInput.Host.IsNull() {
+						elementsDestinationHostInput := make([]types.Object, 0, len(destinationInput.Host.Elements()))
+						diags = destinationInput.Host.ElementsAs(ctx, &elementsDestinationHostInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemDestinationApplicationInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Application
-						for _, item := range elementsDestinationApplicationInput {
-							diags = item.As(ctx, &itemDestinationApplicationInput, basetypes.ObjectAsOptions{})
+						var itemDestinationHostInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Host
+						for _, item := range elementsDestinationHostInput {
+							diags = item.As(ctx, &itemDestinationHostInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
 
-							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationApplicationInput)
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationHostInput)
 							if err != nil {
 								resp.Diagnostics.AddError(
 									"Object Ref transformation failed",
@@ -2865,25 +3608,25 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 								return
 							}
 
-							exceptionInput.Destination.Application = append(exceptionInput.Destination.Application, &cato_models.ApplicationRefInput{
+							exceptionInput.Destination.Host = append(exceptionInput.Destination.Host, &cato_models.HostRefInput{
 								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 								Input: ObjectRefOutput.Input,
 							})
 						}
 					}
 
-					// setting destination custom app
-					if !destinationInput.CustomApp.IsNull() {
-						elementsDestinationCustomAppInput := make([]types.Object, 0, len(destinationInput.CustomApp.Elements()))
-						diags = destinationInput.CustomApp.ElementsAs(ctx, &elementsDestinationCustomAppInput, false)
+					// setting destination site
+					if !destinationInput.Site.IsNull() {
+						elementsDestinationSiteInput := make([]types.Object, 0, len(destinationInput.Site.Elements()))
+						diags = destinationInput.Site.ElementsAs(ctx, &elementsDestinationSiteInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemDestinationCustomAppInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomApp
-						for _, item := range elementsDestinationCustomAppInput {
-							diags = item.As(ctx, &itemDestinationCustomAppInput, basetypes.ObjectAsOptions{})
+						var itemDestinationSiteInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Site
+						for _, item := range elementsDestinationSiteInput {
+							diags = item.As(ctx, &itemDestinationSiteInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
 
-							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCustomAppInput)
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSiteInput)
 							if err != nil {
 								resp.Diagnostics.AddError(
 									"Object Ref transformation failed",
@@ -2892,7 +3635,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 								return
 							}
 
-							exceptionInput.Destination.CustomApp = append(exceptionInput.Destination.CustomApp, &cato_models.CustomApplicationRefInput{
+							exceptionInput.Destination.Site = append(exceptionInput.Destination.Site, &cato_models.SiteRefInput{
 								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 								Input: ObjectRefOutput.Input,
 							})
@@ -2905,7 +3648,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = destinationInput.IPRange.ElementsAs(ctx, &elementsDestinationIPRangeInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemDestinationIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_IPRange
+						var itemDestinationIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_IPRange
 						for _, item := range elementsDestinationIPRangeInput {
 							diags = item.As(ctx, &itemDestinationIPRangeInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2923,7 +3666,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						diags = destinationInput.GlobalIPRange.ElementsAs(ctx, &elementsDestinationGlobalIPRangeInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemDestinationGlobalIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_GlobalIPRange
+						var itemDestinationGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_GlobalIPRange
 						for _, item := range elementsDestinationGlobalIPRangeInput {
 							diags = item.As(ctx, &itemDestinationGlobalIPRangeInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -2931,7 +3674,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationGlobalIPRangeInput)
 							if err != nil {
 								resp.Diagnostics.AddError(
-									"Object Ref transformation failed",
+									"Object Ref transformation failed for",
 									err.Error(),
 								)
 								return
@@ -2944,18 +3687,18 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 						}
 					}
 
-					// setting destination app category
-					if !destinationInput.AppCategory.IsNull() {
-						elementsDestinationAppCategoryInput := make([]types.Object, 0, len(destinationInput.AppCategory.Elements()))
-						diags = destinationInput.AppCategory.ElementsAs(ctx, &elementsDestinationAppCategoryInput, false)
+					// setting destination network interface
+					if !destinationInput.NetworkInterface.IsNull() {
+						elementsDestinationNetworkInterfaceInput := make([]types.Object, 0, len(destinationInput.NetworkInterface.Elements()))
+						diags = destinationInput.NetworkInterface.ElementsAs(ctx, &elementsDestinationNetworkInterfaceInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemDestinationAppCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_AppCategory
-						for _, item := range elementsDestinationAppCategoryInput {
-							diags = item.As(ctx, &itemDestinationAppCategoryInput, basetypes.ObjectAsOptions{})
+						var itemDestinationNetworkInterfaceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_NetworkInterface
+						for _, item := range elementsDestinationNetworkInterfaceInput {
+							diags = item.As(ctx, &itemDestinationNetworkInterfaceInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
 
-							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationAppCategoryInput)
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationNetworkInterfaceInput)
 							if err != nil {
 								resp.Diagnostics.AddError(
 									"Object Ref transformation failed",
@@ -2964,25 +3707,25 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 								return
 							}
 
-							exceptionInput.Destination.AppCategory = append(exceptionInput.Destination.AppCategory, &cato_models.ApplicationCategoryRefInput{
+							exceptionInput.Destination.NetworkInterface = append(exceptionInput.Destination.NetworkInterface, &cato_models.NetworkInterfaceRefInput{
 								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 								Input: ObjectRefOutput.Input,
 							})
 						}
 					}
 
-					// setting destination custom app category
-					if !destinationInput.CustomCategory.IsNull() {
-						elementsDestinationCustomCategoryInput := make([]types.Object, 0, len(destinationInput.CustomCategory.Elements()))
-						diags = destinationInput.CustomCategory.ElementsAs(ctx, &elementsDestinationCustomCategoryInput, false)
+					// setting destination site network subnet
+					if !destinationInput.SiteNetworkSubnet.IsNull() {
+						elementsDestinationSiteNetworkSubnetInput := make([]types.Object, 0, len(destinationInput.SiteNetworkSubnet.Elements()))
+						diags = destinationInput.SiteNetworkSubnet.ElementsAs(ctx, &elementsDestinationSiteNetworkSubnetInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemDestinationCustomCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomCategory
-						for _, item := range elementsDestinationCustomCategoryInput {
-							diags = item.As(ctx, &itemDestinationCustomCategoryInput, basetypes.ObjectAsOptions{})
+						var itemDestinationSiteNetworkSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_SiteNetworkSubnet
+						for _, item := range elementsDestinationSiteNetworkSubnetInput {
+							diags = item.As(ctx, &itemDestinationSiteNetworkSubnetInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
 
-							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCustomCategoryInput)
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSiteNetworkSubnetInput)
 							if err != nil {
 								resp.Diagnostics.AddError(
 									"Object Ref transformation failed",
@@ -2991,25 +3734,25 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 								return
 							}
 
-							exceptionInput.Destination.CustomCategory = append(exceptionInput.Destination.CustomCategory, &cato_models.CustomCategoryRefInput{
+							exceptionInput.Destination.SiteNetworkSubnet = append(exceptionInput.Destination.SiteNetworkSubnet, &cato_models.SiteNetworkSubnetRefInput{
 								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 								Input: ObjectRefOutput.Input,
 							})
 						}
 					}
 
-					// setting destination sanctionned apps category
-					if !destinationInput.SanctionedAppsCategory.IsNull() {
-						elementsDestinationSanctionedAppsCategoryInput := make([]types.Object, 0, len(destinationInput.SanctionedAppsCategory.Elements()))
-						diags = destinationInput.SanctionedAppsCategory.ElementsAs(ctx, &elementsDestinationSanctionedAppsCategoryInput, false)
+					// setting destination floating subnet
+					if !destinationInput.FloatingSubnet.IsNull() {
+						elementsDestinationFloatingSubnetInput := make([]types.Object, 0, len(destinationInput.FloatingSubnet.Elements()))
+						diags = destinationInput.FloatingSubnet.ElementsAs(ctx, &elementsDestinationFloatingSubnetInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemDestinationSanctionedAppsCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_SanctionedAppsCategory
-						for _, item := range elementsDestinationSanctionedAppsCategoryInput {
-							diags = item.As(ctx, &itemDestinationSanctionedAppsCategoryInput, basetypes.ObjectAsOptions{})
+						var itemDestinationFloatingSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_FloatingSubnet
+						for _, item := range elementsDestinationFloatingSubnetInput {
+							diags = item.As(ctx, &itemDestinationFloatingSubnetInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
 
-							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSanctionedAppsCategoryInput)
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationFloatingSubnetInput)
 							if err != nil {
 								resp.Diagnostics.AddError(
 									"Object Ref transformation failed",
@@ -3018,25 +3761,25 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 								return
 							}
 
-							exceptionInput.Destination.SanctionedAppsCategory = append(exceptionInput.Destination.SanctionedAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
+							exceptionInput.Destination.FloatingSubnet = append(exceptionInput.Destination.FloatingSubnet, &cato_models.FloatingSubnetRefInput{
 								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 								Input: ObjectRefOutput.Input,
 							})
 						}
 					}
 
-					// setting destination country
-					if !destinationInput.Country.IsNull() {
-						elementsDestinationCountryInput := make([]types.Object, 0, len(destinationInput.Country.Elements()))
-						diags = destinationInput.Country.ElementsAs(ctx, &elementsDestinationCountryInput, false)
+					// setting destination user
+					if !destinationInput.User.IsNull() {
+						elementsDestinationUserInput := make([]types.Object, 0, len(destinationInput.User.Elements()))
+						diags = destinationInput.User.ElementsAs(ctx, &elementsDestinationUserInput, false)
 						resp.Diagnostics.Append(diags...)
 
-						var itemDestinationCountryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Country
-						for _, item := range elementsDestinationCountryInput {
-							diags = item.As(ctx, &itemDestinationCountryInput, basetypes.ObjectAsOptions{})
+						var itemDestinationUserInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_User
+						for _, item := range elementsDestinationUserInput {
+							diags = item.As(ctx, &itemDestinationUserInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
 
-							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCountryInput)
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationUserInput)
 							if err != nil {
 								resp.Diagnostics.AddError(
 									"Object Ref transformation failed",
@@ -3045,7 +3788,301 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 								return
 							}
 
-							exceptionInput.Destination.Country = append(exceptionInput.Destination.Country, &cato_models.CountryRefInput{
+							exceptionInput.Destination.User = append(exceptionInput.Destination.User, &cato_models.UserRefInput{
+								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+								Input: ObjectRefOutput.Input,
+							})
+						}
+					}
+
+					// setting destination users group
+					if !destinationInput.UsersGroup.IsNull() {
+						elementsDestinationUsersGroupInput := make([]types.Object, 0, len(destinationInput.UsersGroup.Elements()))
+						diags = destinationInput.UsersGroup.ElementsAs(ctx, &elementsDestinationUsersGroupInput, false)
+						resp.Diagnostics.Append(diags...)
+
+						var itemDestinationUsersGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_UsersGroup
+						for _, item := range elementsDestinationUsersGroupInput {
+							diags = item.As(ctx, &itemDestinationUsersGroupInput, basetypes.ObjectAsOptions{})
+							resp.Diagnostics.Append(diags...)
+
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationUsersGroupInput)
+							if err != nil {
+								resp.Diagnostics.AddError(
+									"Object Ref transformation failed",
+									err.Error(),
+								)
+								return
+							}
+
+							exceptionInput.Destination.UsersGroup = append(exceptionInput.Destination.UsersGroup, &cato_models.UsersGroupRefInput{
+								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+								Input: ObjectRefOutput.Input,
+							})
+						}
+					}
+
+					// setting destination group
+					if !destinationInput.Group.IsNull() {
+						elementsDestinationGroupInput := make([]types.Object, 0, len(destinationInput.Group.Elements()))
+						diags = destinationInput.Group.ElementsAs(ctx, &elementsDestinationGroupInput, false)
+						resp.Diagnostics.Append(diags...)
+
+						var itemDestinationGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Group
+						for _, item := range elementsDestinationGroupInput {
+							diags = item.As(ctx, &itemDestinationGroupInput, basetypes.ObjectAsOptions{})
+							resp.Diagnostics.Append(diags...)
+
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationGroupInput)
+							if err != nil {
+								resp.Diagnostics.AddError(
+									"Object Ref transformation failed",
+									err.Error(),
+								)
+								return
+							}
+
+							exceptionInput.Destination.Group = append(exceptionInput.Destination.Group, &cato_models.GroupRefInput{
+								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+								Input: ObjectRefOutput.Input,
+							})
+						}
+					}
+
+					// setting destination system group
+					if !destinationInput.SystemGroup.IsNull() {
+						elementsDestinationSystemGroupInput := make([]types.Object, 0, len(destinationInput.SystemGroup.Elements()))
+						diags = destinationInput.SystemGroup.ElementsAs(ctx, &elementsDestinationSystemGroupInput, false)
+						resp.Diagnostics.Append(diags...)
+
+						var itemDestinationSystemGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_SystemGroup
+						for _, item := range elementsDestinationSystemGroupInput {
+							diags = item.As(ctx, &itemDestinationSystemGroupInput, basetypes.ObjectAsOptions{})
+							resp.Diagnostics.Append(diags...)
+
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSystemGroupInput)
+							if err != nil {
+								resp.Diagnostics.AddError(
+									"Object Ref transformation failed",
+									err.Error(),
+								)
+								return
+							}
+
+							exceptionInput.Destination.SystemGroup = append(exceptionInput.Destination.SystemGroup, &cato_models.SystemGroupRefInput{
+								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+								Input: ObjectRefOutput.Input,
+							})
+						}
+					}
+				}
+
+				// setting application
+				if !itemExceptionsInput.Application.IsNull() {
+
+					exceptionInput.Application = &cato_models.WanFirewallApplicationInput{}
+					applicationInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Application{}
+					diags = itemExceptionsInput.Destination.As(ctx, &applicationInput, basetypes.ObjectAsOptions{})
+					resp.Diagnostics.Append(diags...)
+
+					// setting application IP
+					if !applicationInput.IP.IsNull() {
+						diags = applicationInput.IP.ElementsAs(ctx, &exceptionInput.Application.IP, false)
+						resp.Diagnostics.Append(diags...)
+					}
+
+					// setting application subnet
+					if !applicationInput.Subnet.IsNull() {
+						diags = applicationInput.Subnet.ElementsAs(ctx, &exceptionInput.Application.Subnet, false)
+						resp.Diagnostics.Append(diags...)
+					}
+
+					// setting application domain
+					if !applicationInput.Domain.IsNull() {
+						diags = applicationInput.Domain.ElementsAs(ctx, &exceptionInput.Application.Domain, false)
+						resp.Diagnostics.Append(diags...)
+					}
+
+					// setting application fqdn
+					if !applicationInput.Fqdn.IsNull() {
+						diags = applicationInput.Fqdn.ElementsAs(ctx, &exceptionInput.Application.Fqdn, false)
+						resp.Diagnostics.Append(diags...)
+					}
+
+					// setting application application
+					if !applicationInput.Application.IsNull() {
+						elementsApplicationApplicationInput := make([]types.Object, 0, len(applicationInput.Application.Elements()))
+						diags = applicationInput.Application.ElementsAs(ctx, &elementsApplicationApplicationInput, false)
+						resp.Diagnostics.Append(diags...)
+
+						var itemApplicationApplicationInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_Application
+						for _, item := range elementsApplicationApplicationInput {
+							diags = item.As(ctx, &itemApplicationApplicationInput, basetypes.ObjectAsOptions{})
+							resp.Diagnostics.Append(diags...)
+
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationApplicationInput)
+							if err != nil {
+								resp.Diagnostics.AddError(
+									"Object Ref transformation failed",
+									err.Error(),
+								)
+								return
+							}
+
+							exceptionInput.Application.Application = append(exceptionInput.Application.Application, &cato_models.ApplicationRefInput{
+								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+								Input: ObjectRefOutput.Input,
+							})
+						}
+					}
+
+					// setting application custom app
+					if !applicationInput.CustomApp.IsNull() {
+						elementsApplicationCustomAppInput := make([]types.Object, 0, len(applicationInput.CustomApp.Elements()))
+						diags = applicationInput.CustomApp.ElementsAs(ctx, &elementsApplicationCustomAppInput, false)
+						resp.Diagnostics.Append(diags...)
+
+						var itemApplicationCustomAppInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_CustomApp
+						for _, item := range elementsApplicationCustomAppInput {
+							diags = item.As(ctx, &itemApplicationCustomAppInput, basetypes.ObjectAsOptions{})
+							resp.Diagnostics.Append(diags...)
+
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationCustomAppInput)
+							if err != nil {
+								resp.Diagnostics.AddError(
+									"Object Ref transformation failed",
+									err.Error(),
+								)
+								return
+							}
+
+							exceptionInput.Application.CustomApp = append(exceptionInput.Application.CustomApp, &cato_models.CustomApplicationRefInput{
+								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+								Input: ObjectRefOutput.Input,
+							})
+						}
+					}
+
+					// setting application ip range
+					if !applicationInput.IPRange.IsNull() {
+						elementsApplicationIPRangeInput := make([]types.Object, 0, len(applicationInput.IPRange.Elements()))
+						diags = applicationInput.IPRange.ElementsAs(ctx, &elementsApplicationIPRangeInput, false)
+						resp.Diagnostics.Append(diags...)
+
+						var itemApplicationIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_IPRange
+						for _, item := range elementsApplicationIPRangeInput {
+							diags = item.As(ctx, &itemApplicationIPRangeInput, basetypes.ObjectAsOptions{})
+							resp.Diagnostics.Append(diags...)
+
+							exceptionInput.Application.IPRange = append(exceptionInput.Application.IPRange, &cato_models.IPAddressRangeInput{
+								From: itemApplicationIPRangeInput.From.ValueString(),
+								To:   itemApplicationIPRangeInput.To.ValueString(),
+							})
+						}
+					}
+
+					// setting application global ip range
+					if !applicationInput.GlobalIPRange.IsNull() {
+						elementsApplicationGlobalIPRangeInput := make([]types.Object, 0, len(applicationInput.GlobalIPRange.Elements()))
+						diags = applicationInput.GlobalIPRange.ElementsAs(ctx, &elementsApplicationGlobalIPRangeInput, false)
+						resp.Diagnostics.Append(diags...)
+
+						var itemApplicationGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_GlobalIPRange
+						for _, item := range elementsApplicationGlobalIPRangeInput {
+							diags = item.As(ctx, &itemApplicationGlobalIPRangeInput, basetypes.ObjectAsOptions{})
+							resp.Diagnostics.Append(diags...)
+
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationGlobalIPRangeInput)
+							if err != nil {
+								resp.Diagnostics.AddError(
+									"Object Ref transformation failed",
+									err.Error(),
+								)
+								return
+							}
+
+							exceptionInput.Application.GlobalIPRange = append(exceptionInput.Application.GlobalIPRange, &cato_models.GlobalIPRangeRefInput{
+								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+								Input: ObjectRefOutput.Input,
+							})
+						}
+					}
+
+					// setting application app category
+					if !applicationInput.AppCategory.IsNull() {
+						elementsApplicationAppCategoryInput := make([]types.Object, 0, len(applicationInput.AppCategory.Elements()))
+						diags = applicationInput.AppCategory.ElementsAs(ctx, &elementsApplicationAppCategoryInput, false)
+						resp.Diagnostics.Append(diags...)
+
+						var itemApplicationAppCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_AppCategory
+						for _, item := range elementsApplicationAppCategoryInput {
+							diags = item.As(ctx, &itemApplicationAppCategoryInput, basetypes.ObjectAsOptions{})
+							resp.Diagnostics.Append(diags...)
+
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationAppCategoryInput)
+							if err != nil {
+								resp.Diagnostics.AddError(
+									"Object Ref transformation failed",
+									err.Error(),
+								)
+								return
+							}
+
+							exceptionInput.Application.AppCategory = append(exceptionInput.Application.AppCategory, &cato_models.ApplicationCategoryRefInput{
+								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+								Input: ObjectRefOutput.Input,
+							})
+						}
+					}
+
+					// setting application custom app category
+					if !applicationInput.CustomCategory.IsNull() {
+						elementsApplicationCustomCategoryInput := make([]types.Object, 0, len(applicationInput.CustomCategory.Elements()))
+						diags = applicationInput.CustomCategory.ElementsAs(ctx, &elementsApplicationCustomCategoryInput, false)
+						resp.Diagnostics.Append(diags...)
+
+						var itemApplicationCustomCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_CustomCategory
+						for _, item := range elementsApplicationCustomCategoryInput {
+							diags = item.As(ctx, &itemApplicationCustomCategoryInput, basetypes.ObjectAsOptions{})
+							resp.Diagnostics.Append(diags...)
+
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationCustomCategoryInput)
+							if err != nil {
+								resp.Diagnostics.AddError(
+									"Object Ref transformation failed",
+									err.Error(),
+								)
+								return
+							}
+
+							exceptionInput.Application.CustomCategory = append(exceptionInput.Application.CustomCategory, &cato_models.CustomCategoryRefInput{
+								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+								Input: ObjectRefOutput.Input,
+							})
+						}
+					}
+
+					// setting application sanctionned apps category
+					if !applicationInput.SanctionedAppsCategory.IsNull() {
+						elementsApplicationSanctionedAppsCategoryInput := make([]types.Object, 0, len(applicationInput.SanctionedAppsCategory.Elements()))
+						diags = applicationInput.SanctionedAppsCategory.ElementsAs(ctx, &elementsApplicationSanctionedAppsCategoryInput, false)
+						resp.Diagnostics.Append(diags...)
+
+						var itemApplicationSanctionedAppsCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_SanctionedAppsCategory
+						for _, item := range elementsApplicationSanctionedAppsCategoryInput {
+							diags = item.As(ctx, &itemApplicationSanctionedAppsCategoryInput, basetypes.ObjectAsOptions{})
+							resp.Diagnostics.Append(diags...)
+
+							ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationSanctionedAppsCategoryInput)
+							if err != nil {
+								resp.Diagnostics.AddError(
+									"Object Ref transformation failed",
+									err.Error(),
+								)
+								return
+							}
+
+							exceptionInput.Application.SanctionedAppsCategory = append(exceptionInput.Application.SanctionedAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
 								By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 								Input: ObjectRefOutput.Input,
 							})
@@ -3056,8 +4093,8 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				// setting service
 				if !itemExceptionsInput.Service.IsNull() {
 
-					exceptionInput.Service = &cato_models.InternetFirewallServiceTypeInput{}
-					serviceInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service{}
+					exceptionInput.Service = &cato_models.WanFirewallServiceTypeInput{}
+					serviceInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Service{}
 					diags = itemExceptionsInput.Service.As(ctx, &serviceInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
 					if resp.Diagnostics.HasError() {
@@ -3073,7 +4110,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 							return
 						}
 
-						var itemServiceStandardInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Standard
+						var itemServiceStandardInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Standard
 						for _, item := range elementsServiceStandardInput {
 							diags = item.As(ctx, &itemServiceStandardInput, basetypes.ObjectAsOptions{})
 							resp.Diagnostics.Append(diags...)
@@ -3103,7 +4140,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 							return
 						}
 
-						var itemServiceCustomInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Custom
+						var itemServiceCustomInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Custom
 						for _, item := range elementsServiceCustomInput {
 							diags = item.As(ctx, &itemServiceCustomInput, basetypes.ObjectAsOptions{})
 
@@ -3127,7 +4164,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 
 							// setting service custom port range
 							if !itemServiceCustomInput.PortRange.IsNull() {
-								var itemPortRange Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Custom_PortRange
+								var itemPortRange Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Custom_PortRange
 								diags = itemServiceCustomInput.PortRange.As(ctx, &itemPortRange, basetypes.ObjectAsOptions{})
 
 								inputPortRange := cato_models.PortRangeInput{
@@ -3153,7 +4190,8 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 		input.Rule.Name = ruleInput.Name.ValueString()
 		input.Rule.Description = ruleInput.Description.ValueString()
 		input.Rule.Enabled = ruleInput.Enabled.ValueBool()
-		input.Rule.Action = cato_models.InternetFirewallActionEnum(ruleInput.Action.ValueString())
+		input.Rule.Action = cato_models.WanFirewallActionEnum(ruleInput.Action.ValueString())
+		input.Rule.Direction = cato_models.WanFirewallDirectionEnum(ruleInput.Direction.ValueString())
 		if !ruleInput.ConnectionOrigin.IsNull() {
 			input.Rule.ConnectionOrigin = cato_models.ConnectionOriginEnum(ruleInput.ConnectionOrigin.ValueString())
 		} else {
@@ -3165,23 +4203,23 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	tflog.Debug(ctx, "internet_fw_policy create", map[string]interface{}{
+	tflog.Debug(ctx, "wan_fw_policy create", map[string]interface{}{
 		"input": utils.InterfaceToJSONString(input),
 	})
 
 	//creating new rule
-	policyChange, err := r.client.catov2.PolicyInternetFirewallAddRule(ctx, input, r.client.AccountId)
+	policyChange, err := r.client.catov2.PolicyWanFirewallAddRule(ctx, input, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Catov2 API PolicyInternetFirewallAddRule error",
+			"Catov2 API PolicyWanFirewallAddRule error",
 			err.Error(),
 		)
 		return
 	}
 
 	// check for errors
-	if policyChange.Policy.InternetFirewall.AddRule.Status != "SUCCESS" {
-		for _, item := range policyChange.Policy.InternetFirewall.AddRule.GetErrors() {
+	if policyChange.Policy.WanFirewall.AddRule.Status != "SUCCESS" {
+		for _, item := range policyChange.Policy.WanFirewall.AddRule.GetErrors() {
 			resp.Diagnostics.AddError(
 				"API Error Creating Resource",
 				fmt.Sprintf("%s : %s", *item.ErrorCode, *item.ErrorMessage),
@@ -3193,10 +4231,10 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 	//publishing new rule
 	tflog.Info(ctx, "publishing new rule")
 	publishDataIfEnabled := &cato_models.PolicyPublishRevisionInput{}
-	_, err = r.client.catov2.PolicyInternetFirewallPublishPolicyRevision(ctx, &cato_models.InternetFirewallPolicyMutationInput{}, publishDataIfEnabled, r.client.AccountId)
+	_, err = r.client.catov2.PolicyWanFirewallPublishPolicyRevision(ctx, publishDataIfEnabled, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Catov2 API PolicyInternetFirewallPublishPolicyRevision error",
+			"Catov2 API PolicyWanFirewallPublishPolicyRevision error",
 			err.Error(),
 		)
 		return
@@ -3212,71 +4250,71 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 	resp.State.SetAttribute(
 		ctx,
 		path.Root("rule").AtName("id"),
-		policyChange.GetPolicy().GetInternetFirewall().GetAddRule().Rule.GetRule().ID)
+		policyChange.GetPolicy().GetWanFirewall().GetAddRule().Rule.GetRule().ID)
 }
 
-func (r *internetFwRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *wanFwRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 
-	var state InternetFirewallRule
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// var state WanFirewallRule
+	// diags := req.State.Get(ctx, &state)
+	// resp.Diagnostics.Append(diags...)
+	// if resp.Diagnostics.HasError() {
+	// 	return
+	// }
 
-	body, err := r.client.catov2.Policy(ctx, &cato_models.InternetFirewallPolicyInput{}, &cato_models.WanFirewallPolicyInput{}, r.client.AccountId)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Catov2 API error",
-			err.Error(),
-		)
-		return
-	}
+	// body, err := r.client.catov2.Policy(ctx, &cato_models.InternetFirewallPolicyInput{}, &cato_models.WanFirewallPolicyInput{}, r.client.AccountId)
+	// if err != nil {
+	// 	resp.Diagnostics.AddError(
+	// 		"Catov2 API error",
+	// 		err.Error(),
+	// 	)
+	// 	return
+	// }
 
-	//retrieve rule ID
-	rule := Policy_Policy_InternetFirewall_Policy_Rules_Rule{}
-	diags = state.Rule.As(ctx, &rule, basetypes.ObjectAsOptions{})
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// //retrieve rule ID
+	// rule := Policy_Policy_WanFirewall_Policy_Rules_Rule{}
+	// diags = state.Rule.As(ctx, &rule, basetypes.ObjectAsOptions{})
+	// resp.Diagnostics.Append(diags...)
+	// if resp.Diagnostics.HasError() {
+	// 	return
+	// }
 
-	ruleList := body.GetPolicy().InternetFirewall.Policy.GetRules()
-	ruleExist := false
-	for _, ruleListItem := range ruleList {
-		if ruleListItem.GetRule().ID == rule.ID.ValueString() {
-			ruleExist = true
+	// ruleList := body.GetPolicy().WanFirewall.Policy.GetRules()
+	// ruleExist := false
+	// for _, ruleListItem := range ruleList {
+	// 	if ruleListItem.GetRule().ID == rule.ID.ValueString() {
+	// 		ruleExist = true
 
-			// Need to refresh STATE
-		}
-	}
+	// 		// Need to refresh STATE
+	// 	}
+	// }
 
-	// remove resource if it doesn't exist anymore
-	if !ruleExist {
-		tflog.Warn(ctx, "internet rule not found, resource removed")
-		resp.State.RemoveResource(ctx)
-		return
-	}
+	// // remove resource if it doesn't exist anymore
+	// if !ruleExist {
+	// 	tflog.Warn(ctx, "internet rule not found, resource removed")
+	// 	resp.State.RemoveResource(ctx)
+	// 	return
+	// }
 
-	diags = resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// diags = resp.State.Set(ctx, &state)
+	// resp.Diagnostics.Append(diags...)
+	// if resp.Diagnostics.HasError() {
+	// 	return
+	// }
 }
 
-func (r *internetFwRuleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *wanFwRuleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 
-	var plan InternetFirewallRule
+	var plan WanFirewallRule
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	input := cato_models.InternetFirewallUpdateRuleInput{
-		Rule: &cato_models.InternetFirewallUpdateRuleDataInput{
-			Source: &cato_models.InternetFirewallSourceUpdateInput{
+	input := cato_models.WanFirewallUpdateRuleInput{
+		Rule: &cato_models.WanFirewallUpdateRuleDataInput{
+			Source: &cato_models.WanFirewallSourceUpdateInput{
 				IP:                []string{},
 				Host:              []*cato_models.HostRefInput{},
 				Site:              []*cato_models.SiteRefInput{},
@@ -3291,25 +4329,38 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 				Group:             []*cato_models.GroupRefInput{},
 				SystemGroup:       []*cato_models.SystemGroupRefInput{},
 			},
-			Country:  []*cato_models.CountryRefInput{},
+			Country: []*cato_models.CountryRefInput{},
+			Destination: &cato_models.WanFirewallDestinationUpdateInput{
+				IP:                []string{},
+				Host:              []*cato_models.HostRefInput{},
+				Site:              []*cato_models.SiteRefInput{},
+				Subnet:            []string{},
+				IPRange:           []*cato_models.IPAddressRangeInput{},
+				GlobalIPRange:     []*cato_models.GlobalIPRangeRefInput{},
+				NetworkInterface:  []*cato_models.NetworkInterfaceRefInput{},
+				SiteNetworkSubnet: []*cato_models.SiteNetworkSubnetRefInput{},
+				FloatingSubnet:    []*cato_models.FloatingSubnetRefInput{},
+				User:              []*cato_models.UserRefInput{},
+				UsersGroup:        []*cato_models.UsersGroupRefInput{},
+				Group:             []*cato_models.GroupRefInput{},
+				SystemGroup:       []*cato_models.SystemGroupRefInput{},
+			},
 			Device:   []*cato_models.DeviceProfileRefInput{},
 			DeviceOs: []cato_models.OperatingSystem{},
-			Destination: &cato_models.InternetFirewallDestinationUpdateInput{
+			Application: &cato_models.WanFirewallApplicationUpdateInput{
 				Application:            []*cato_models.ApplicationRefInput{},
 				CustomApp:              []*cato_models.CustomApplicationRefInput{},
 				AppCategory:            []*cato_models.ApplicationCategoryRefInput{},
 				CustomCategory:         []*cato_models.CustomCategoryRefInput{},
 				SanctionedAppsCategory: []*cato_models.SanctionedAppsCategoryRefInput{},
-				Country:                []*cato_models.CountryRefInput{},
 				Domain:                 []string{},
 				Fqdn:                   []string{},
 				IP:                     []string{},
 				Subnet:                 []string{},
 				IPRange:                []*cato_models.IPAddressRangeInput{},
 				GlobalIPRange:          []*cato_models.GlobalIPRangeRefInput{},
-				RemoteAsn:              []string{},
 			},
-			Service: &cato_models.InternetFirewallServiceTypeUpdateInput{
+			Service: &cato_models.WanFirewallServiceTypeUpdateInput{
 				Standard: []*cato_models.ServiceRefInput{},
 				Custom:   []*cato_models.CustomServiceInput{},
 			},
@@ -3325,18 +4376,18 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 				CustomTimeframe: &cato_models.PolicyCustomTimeframeUpdateInput{},
 				CustomRecurring: &cato_models.PolicyCustomRecurringUpdateInput{},
 			},
-			Exceptions: []*cato_models.InternetFirewallRuleExceptionInput{},
+			Exceptions: []*cato_models.WanFirewallRuleExceptionInput{},
 		},
 	}
 
 	// setting rule
-	ruleInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule{}
+	ruleInput := Policy_Policy_WanFirewall_Policy_Rules_Rule{}
 	diags = plan.Rule.As(ctx, &ruleInput, basetypes.ObjectAsOptions{})
 	resp.Diagnostics.Append(diags...)
 
 	// setting source
 	if !ruleInput.Source.IsNull() {
-		sourceInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source{}
+		sourceInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Source{}
 		diags = ruleInput.Source.As(ctx, &sourceInput, basetypes.ObjectAsOptions{})
 		resp.Diagnostics.Append(diags...)
 
@@ -3358,7 +4409,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.Host.ElementsAs(ctx, &elementsSourceHostInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceHostInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Host
+			var itemSourceHostInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Host
 			for _, item := range elementsSourceHostInput {
 				diags = item.As(ctx, &itemSourceHostInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3385,7 +4436,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.Site.ElementsAs(ctx, &elementsSourceSiteInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceSiteInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Site
+			var itemSourceSiteInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Site
 			for _, item := range elementsSourceSiteInput {
 				diags = item.As(ctx, &itemSourceSiteInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3412,7 +4463,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.IPRange.ElementsAs(ctx, &elementsSourceIPRangeInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_IPRange
+			var itemSourceIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_IPRange
 			for _, item := range elementsSourceIPRangeInput {
 				diags = item.As(ctx, &itemSourceIPRangeInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3430,7 +4481,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.GlobalIPRange.ElementsAs(ctx, &elementsSourceGlobalIPRangeInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceGlobalIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_GlobalIPRange
+			var itemSourceGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_GlobalIPRange
 			for _, item := range elementsSourceGlobalIPRangeInput {
 				diags = item.As(ctx, &itemSourceGlobalIPRangeInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3457,7 +4508,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.NetworkInterface.ElementsAs(ctx, &elementsSourceNetworkInterfaceInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceNetworkInterfaceInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_NetworkInterface
+			var itemSourceNetworkInterfaceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_NetworkInterface
 			for _, item := range elementsSourceNetworkInterfaceInput {
 				diags = item.As(ctx, &itemSourceNetworkInterfaceInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3484,7 +4535,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.SiteNetworkSubnet.ElementsAs(ctx, &elementsSourceSiteNetworkSubnetInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceSiteNetworkSubnetInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_SiteNetworkSubnet
+			var itemSourceSiteNetworkSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_SiteNetworkSubnet
 			for _, item := range elementsSourceSiteNetworkSubnetInput {
 				diags = item.As(ctx, &itemSourceSiteNetworkSubnetInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3511,7 +4562,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.FloatingSubnet.ElementsAs(ctx, &elementsSourceFloatingSubnetInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceFloatingSubnetInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_FloatingSubnet
+			var itemSourceFloatingSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_FloatingSubnet
 			for _, item := range elementsSourceFloatingSubnetInput {
 				diags = item.As(ctx, &itemSourceFloatingSubnetInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3538,7 +4589,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.User.ElementsAs(ctx, &elementsSourceUserInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceUserInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_User
+			var itemSourceUserInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_User
 			for _, item := range elementsSourceUserInput {
 				diags = item.As(ctx, &itemSourceUserInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3565,7 +4616,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.UsersGroup.ElementsAs(ctx, &elementsSourceUsersGroupInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceUsersGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_UsersGroup
+			var itemSourceUsersGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_UsersGroup
 			for _, item := range elementsSourceUsersGroupInput {
 				diags = item.As(ctx, &itemSourceUsersGroupInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3592,7 +4643,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.Group.ElementsAs(ctx, &elementsSourceGroupInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Group
+			var itemSourceGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Group
 			for _, item := range elementsSourceGroupInput {
 				diags = item.As(ctx, &itemSourceGroupInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3619,7 +4670,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = sourceInput.SystemGroup.ElementsAs(ctx, &elementsSourceSystemGroupInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemSourceSystemGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_SystemGroup
+			var itemSourceSystemGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_SystemGroup
 			for _, item := range elementsSourceSystemGroupInput {
 				diags = item.As(ctx, &itemSourceSystemGroupInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3647,7 +4698,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 		diags = ruleInput.Country.ElementsAs(ctx, &elementsCountryInput, false)
 		resp.Diagnostics.Append(diags...)
 
-		var itemCountryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Country
+		var itemCountryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Country
 		for _, item := range elementsCountryInput {
 			diags = item.As(ctx, &itemCountryInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
@@ -3674,7 +4725,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 		diags = ruleInput.Device.ElementsAs(ctx, &elementsDeviceInput, false)
 		resp.Diagnostics.Append(diags...)
 
-		var itemDeviceInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Device
+		var itemDeviceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Device
 		for _, item := range elementsDeviceInput {
 			diags = item.As(ctx, &itemDeviceInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
@@ -3706,7 +4757,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 
 	// setting destination
 	if !ruleInput.Destination.IsNull() {
-		destinationInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination{}
+		destinationInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination{}
 		diags = ruleInput.Destination.As(ctx, &destinationInput, basetypes.ObjectAsOptions{})
 		resp.Diagnostics.Append(diags...)
 
@@ -3722,36 +4773,18 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			resp.Diagnostics.Append(diags...)
 		}
 
-		// setting destination domain
-		if !destinationInput.Domain.IsNull() {
-			diags = destinationInput.Domain.ElementsAs(ctx, &input.Rule.Destination.Domain, false)
-			resp.Diagnostics.Append(diags...)
-		}
-
-		// setting destination fqdn
-		if !destinationInput.Fqdn.IsNull() {
-			diags = destinationInput.Fqdn.ElementsAs(ctx, &input.Rule.Destination.Fqdn, false)
-			resp.Diagnostics.Append(diags...)
-		}
-
-		// setting destination remote asn
-		if !destinationInput.RemoteAsn.IsNull() {
-			diags = destinationInput.RemoteAsn.ElementsAs(ctx, &input.Rule.Destination.RemoteAsn, false)
-			resp.Diagnostics.Append(diags...)
-		}
-
-		// setting destination application
-		if !destinationInput.Application.IsNull() {
-			elementsDestinationApplicationInput := make([]types.Object, 0, len(destinationInput.Application.Elements()))
-			diags = destinationInput.Application.ElementsAs(ctx, &elementsDestinationApplicationInput, false)
+		// setting destination host
+		if !destinationInput.Host.IsNull() {
+			elementsDestinationHostInput := make([]types.Object, 0, len(destinationInput.Host.Elements()))
+			diags = destinationInput.Host.ElementsAs(ctx, &elementsDestinationHostInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemDestinationApplicationInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Application
-			for _, item := range elementsDestinationApplicationInput {
-				diags = item.As(ctx, &itemDestinationApplicationInput, basetypes.ObjectAsOptions{})
+			var itemDestinationHostInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Host
+			for _, item := range elementsDestinationHostInput {
+				diags = item.As(ctx, &itemDestinationHostInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 
-				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationApplicationInput)
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationHostInput)
 				if err != nil {
 					resp.Diagnostics.AddError(
 						"Object Ref transformation failed",
@@ -3760,25 +4793,25 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					return
 				}
 
-				input.Rule.Destination.Application = append(input.Rule.Destination.Application, &cato_models.ApplicationRefInput{
+				input.Rule.Destination.Host = append(input.Rule.Destination.Host, &cato_models.HostRefInput{
 					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 					Input: ObjectRefOutput.Input,
 				})
 			}
 		}
 
-		// setting destination custom app
-		if !destinationInput.CustomApp.IsNull() {
-			elementsDestinationCustomAppInput := make([]types.Object, 0, len(destinationInput.CustomApp.Elements()))
-			diags = destinationInput.CustomApp.ElementsAs(ctx, &elementsDestinationCustomAppInput, false)
+		// setting destination site
+		if !destinationInput.Site.IsNull() {
+			elementsDestinationSiteInput := make([]types.Object, 0, len(destinationInput.Site.Elements()))
+			diags = destinationInput.Site.ElementsAs(ctx, &elementsDestinationSiteInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemDestinationCustomAppInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomApp
-			for _, item := range elementsDestinationCustomAppInput {
-				diags = item.As(ctx, &itemDestinationCustomAppInput, basetypes.ObjectAsOptions{})
+			var itemDestinationSiteInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Site
+			for _, item := range elementsDestinationSiteInput {
+				diags = item.As(ctx, &itemDestinationSiteInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 
-				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCustomAppInput)
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSiteInput)
 				if err != nil {
 					resp.Diagnostics.AddError(
 						"Object Ref transformation failed",
@@ -3787,7 +4820,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					return
 				}
 
-				input.Rule.Destination.CustomApp = append(input.Rule.Destination.CustomApp, &cato_models.CustomApplicationRefInput{
+				input.Rule.Destination.Site = append(input.Rule.Destination.Site, &cato_models.SiteRefInput{
 					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 					Input: ObjectRefOutput.Input,
 				})
@@ -3800,7 +4833,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = destinationInput.IPRange.ElementsAs(ctx, &elementsDestinationIPRangeInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemDestinationIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_IPRange
+			var itemDestinationIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_IPRange
 			for _, item := range elementsDestinationIPRangeInput {
 				diags = item.As(ctx, &itemDestinationIPRangeInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3818,7 +4851,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			diags = destinationInput.GlobalIPRange.ElementsAs(ctx, &elementsDestinationGlobalIPRangeInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemDestinationGlobalIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_GlobalIPRange
+			var itemDestinationGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_GlobalIPRange
 			for _, item := range elementsDestinationGlobalIPRangeInput {
 				diags = item.As(ctx, &itemDestinationGlobalIPRangeInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3826,7 +4859,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationGlobalIPRangeInput)
 				if err != nil {
 					resp.Diagnostics.AddError(
-						"Object Ref transformation failed",
+						"Object Ref transformation failed for",
 						err.Error(),
 					)
 					return
@@ -3839,18 +4872,18 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			}
 		}
 
-		// setting destination app category
-		if !destinationInput.AppCategory.IsNull() {
-			elementsDestinationAppCategoryInput := make([]types.Object, 0, len(destinationInput.AppCategory.Elements()))
-			diags = destinationInput.AppCategory.ElementsAs(ctx, &elementsDestinationAppCategoryInput, false)
+		// setting destination network interface
+		if !destinationInput.NetworkInterface.IsNull() {
+			elementsDestinationNetworkInterfaceInput := make([]types.Object, 0, len(destinationInput.NetworkInterface.Elements()))
+			diags = destinationInput.NetworkInterface.ElementsAs(ctx, &elementsDestinationNetworkInterfaceInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemDestinationAppCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_AppCategory
-			for _, item := range elementsDestinationAppCategoryInput {
-				diags = item.As(ctx, &itemDestinationAppCategoryInput, basetypes.ObjectAsOptions{})
+			var itemDestinationNetworkInterfaceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_NetworkInterface
+			for _, item := range elementsDestinationNetworkInterfaceInput {
+				diags = item.As(ctx, &itemDestinationNetworkInterfaceInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 
-				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationAppCategoryInput)
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationNetworkInterfaceInput)
 				if err != nil {
 					resp.Diagnostics.AddError(
 						"Object Ref transformation failed",
@@ -3859,25 +4892,25 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					return
 				}
 
-				input.Rule.Destination.AppCategory = append(input.Rule.Destination.AppCategory, &cato_models.ApplicationCategoryRefInput{
+				input.Rule.Destination.NetworkInterface = append(input.Rule.Destination.NetworkInterface, &cato_models.NetworkInterfaceRefInput{
 					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 					Input: ObjectRefOutput.Input,
 				})
 			}
 		}
 
-		// setting destination custom app category
-		if !destinationInput.CustomCategory.IsNull() {
-			elementsDestinationCustomCategoryInput := make([]types.Object, 0, len(destinationInput.CustomCategory.Elements()))
-			diags = destinationInput.CustomCategory.ElementsAs(ctx, &elementsDestinationCustomCategoryInput, false)
+		// setting destination site network subnet
+		if !destinationInput.SiteNetworkSubnet.IsNull() {
+			elementsDestinationSiteNetworkSubnetInput := make([]types.Object, 0, len(destinationInput.SiteNetworkSubnet.Elements()))
+			diags = destinationInput.SiteNetworkSubnet.ElementsAs(ctx, &elementsDestinationSiteNetworkSubnetInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemDestinationCustomCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomCategory
-			for _, item := range elementsDestinationCustomCategoryInput {
-				diags = item.As(ctx, &itemDestinationCustomCategoryInput, basetypes.ObjectAsOptions{})
+			var itemDestinationSiteNetworkSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_SiteNetworkSubnet
+			for _, item := range elementsDestinationSiteNetworkSubnetInput {
+				diags = item.As(ctx, &itemDestinationSiteNetworkSubnetInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 
-				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCustomCategoryInput)
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSiteNetworkSubnetInput)
 				if err != nil {
 					resp.Diagnostics.AddError(
 						"Object Ref transformation failed",
@@ -3886,25 +4919,25 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					return
 				}
 
-				input.Rule.Destination.CustomCategory = append(input.Rule.Destination.CustomCategory, &cato_models.CustomCategoryRefInput{
+				input.Rule.Destination.SiteNetworkSubnet = append(input.Rule.Destination.SiteNetworkSubnet, &cato_models.SiteNetworkSubnetRefInput{
 					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 					Input: ObjectRefOutput.Input,
 				})
 			}
 		}
 
-		// setting destination sanctionned apps category
-		if !destinationInput.SanctionedAppsCategory.IsNull() {
-			elementsDestinationSanctionedAppsCategoryInput := make([]types.Object, 0, len(destinationInput.SanctionedAppsCategory.Elements()))
-			diags = destinationInput.SanctionedAppsCategory.ElementsAs(ctx, &elementsDestinationSanctionedAppsCategoryInput, false)
+		// setting destination floating subnet
+		if !destinationInput.FloatingSubnet.IsNull() {
+			elementsDestinationFloatingSubnetInput := make([]types.Object, 0, len(destinationInput.FloatingSubnet.Elements()))
+			diags = destinationInput.FloatingSubnet.ElementsAs(ctx, &elementsDestinationFloatingSubnetInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemDestinationSanctionedAppsCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_SanctionedAppsCategory
-			for _, item := range elementsDestinationSanctionedAppsCategoryInput {
-				diags = item.As(ctx, &itemDestinationSanctionedAppsCategoryInput, basetypes.ObjectAsOptions{})
+			var itemDestinationFloatingSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_FloatingSubnet
+			for _, item := range elementsDestinationFloatingSubnetInput {
+				diags = item.As(ctx, &itemDestinationFloatingSubnetInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 
-				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSanctionedAppsCategoryInput)
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationFloatingSubnetInput)
 				if err != nil {
 					resp.Diagnostics.AddError(
 						"Object Ref transformation failed",
@@ -3913,25 +4946,25 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					return
 				}
 
-				input.Rule.Destination.SanctionedAppsCategory = append(input.Rule.Destination.SanctionedAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
+				input.Rule.Destination.FloatingSubnet = append(input.Rule.Destination.FloatingSubnet, &cato_models.FloatingSubnetRefInput{
 					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 					Input: ObjectRefOutput.Input,
 				})
 			}
 		}
 
-		// setting destination country
-		if !destinationInput.Country.IsNull() {
-			elementsDestinationCountryInput := make([]types.Object, 0, len(destinationInput.Country.Elements()))
-			diags = destinationInput.Country.ElementsAs(ctx, &elementsDestinationCountryInput, false)
+		// setting destination user
+		if !destinationInput.User.IsNull() {
+			elementsDestinationUserInput := make([]types.Object, 0, len(destinationInput.User.Elements()))
+			diags = destinationInput.User.ElementsAs(ctx, &elementsDestinationUserInput, false)
 			resp.Diagnostics.Append(diags...)
 
-			var itemDestinationCountryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Country
-			for _, item := range elementsDestinationCountryInput {
-				diags = item.As(ctx, &itemDestinationCountryInput, basetypes.ObjectAsOptions{})
+			var itemDestinationUserInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_User
+			for _, item := range elementsDestinationUserInput {
+				diags = item.As(ctx, &itemDestinationUserInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 
-				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCountryInput)
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationUserInput)
 				if err != nil {
 					resp.Diagnostics.AddError(
 						"Object Ref transformation failed",
@@ -3940,7 +4973,299 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					return
 				}
 
-				input.Rule.Destination.Country = append(input.Rule.Destination.Country, &cato_models.CountryRefInput{
+				input.Rule.Destination.User = append(input.Rule.Destination.User, &cato_models.UserRefInput{
+					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+					Input: ObjectRefOutput.Input,
+				})
+			}
+		}
+
+		// setting destination users group
+		if !destinationInput.UsersGroup.IsNull() {
+			elementsDestinationUsersGroupInput := make([]types.Object, 0, len(destinationInput.UsersGroup.Elements()))
+			diags = destinationInput.UsersGroup.ElementsAs(ctx, &elementsDestinationUsersGroupInput, false)
+			resp.Diagnostics.Append(diags...)
+
+			var itemDestinationUsersGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_UsersGroup
+			for _, item := range elementsDestinationUsersGroupInput {
+				diags = item.As(ctx, &itemDestinationUsersGroupInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationUsersGroupInput)
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"Object Ref transformation failed",
+						err.Error(),
+					)
+					return
+				}
+
+				input.Rule.Destination.UsersGroup = append(input.Rule.Destination.UsersGroup, &cato_models.UsersGroupRefInput{
+					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+					Input: ObjectRefOutput.Input,
+				})
+			}
+		}
+
+		// setting destination group
+		if !destinationInput.Group.IsNull() {
+			elementsDestinationGroupInput := make([]types.Object, 0, len(destinationInput.Group.Elements()))
+			diags = destinationInput.Group.ElementsAs(ctx, &elementsDestinationGroupInput, false)
+			resp.Diagnostics.Append(diags...)
+
+			var itemDestinationGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Group
+			for _, item := range elementsDestinationGroupInput {
+				diags = item.As(ctx, &itemDestinationGroupInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationGroupInput)
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"Object Ref transformation failed",
+						err.Error(),
+					)
+					return
+				}
+
+				input.Rule.Destination.Group = append(input.Rule.Destination.Group, &cato_models.GroupRefInput{
+					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+					Input: ObjectRefOutput.Input,
+				})
+			}
+		}
+
+		// setting destination system group
+		if !destinationInput.SystemGroup.IsNull() {
+			elementsDestinationSystemGroupInput := make([]types.Object, 0, len(destinationInput.SystemGroup.Elements()))
+			diags = destinationInput.SystemGroup.ElementsAs(ctx, &elementsDestinationSystemGroupInput, false)
+			resp.Diagnostics.Append(diags...)
+
+			var itemDestinationSystemGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_SystemGroup
+			for _, item := range elementsDestinationSystemGroupInput {
+				diags = item.As(ctx, &itemDestinationSystemGroupInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSystemGroupInput)
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"Object Ref transformation failed",
+						err.Error(),
+					)
+					return
+				}
+
+				input.Rule.Destination.SystemGroup = append(input.Rule.Destination.SystemGroup, &cato_models.SystemGroupRefInput{
+					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+					Input: ObjectRefOutput.Input,
+				})
+			}
+		}
+	}
+
+	// setting application
+	if !ruleInput.Application.IsNull() {
+		applicationInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Application{}
+		diags = ruleInput.Application.As(ctx, &applicationInput, basetypes.ObjectAsOptions{})
+		resp.Diagnostics.Append(diags...)
+
+		// setting application IP
+		if !applicationInput.IP.IsNull() {
+			diags = applicationInput.IP.ElementsAs(ctx, &input.Rule.Application.IP, false)
+			resp.Diagnostics.Append(diags...)
+		}
+
+		// setting application subnet
+		if !applicationInput.Subnet.IsNull() {
+			diags = applicationInput.Subnet.ElementsAs(ctx, &input.Rule.Application.Subnet, false)
+			resp.Diagnostics.Append(diags...)
+		}
+
+		// setting application domain
+		if !applicationInput.Domain.IsNull() {
+			diags = applicationInput.Domain.ElementsAs(ctx, &input.Rule.Application.Domain, false)
+			resp.Diagnostics.Append(diags...)
+		}
+
+		// setting application fqdn
+		if !applicationInput.Fqdn.IsNull() {
+			diags = applicationInput.Fqdn.ElementsAs(ctx, &input.Rule.Application.Fqdn, false)
+			resp.Diagnostics.Append(diags...)
+		}
+
+		// setting application application
+		if !applicationInput.Application.IsNull() {
+			elementsApplicationApplicationInput := make([]types.Object, 0, len(applicationInput.Application.Elements()))
+			diags = applicationInput.Application.ElementsAs(ctx, &elementsApplicationApplicationInput, false)
+			resp.Diagnostics.Append(diags...)
+
+			var itemApplicationApplicationInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_Application
+			for _, item := range elementsApplicationApplicationInput {
+				diags = item.As(ctx, &itemApplicationApplicationInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationApplicationInput)
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"Object Ref transformation failed",
+						err.Error(),
+					)
+					return
+				}
+
+				input.Rule.Application.Application = append(input.Rule.Application.Application, &cato_models.ApplicationRefInput{
+					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+					Input: ObjectRefOutput.Input,
+				})
+			}
+		}
+
+		// setting application custom app
+		if !applicationInput.CustomApp.IsNull() {
+			elementsApplicationCustomAppInput := make([]types.Object, 0, len(applicationInput.CustomApp.Elements()))
+			diags = applicationInput.CustomApp.ElementsAs(ctx, &elementsApplicationCustomAppInput, false)
+			resp.Diagnostics.Append(diags...)
+
+			var itemApplicationCustomAppInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_CustomApp
+			for _, item := range elementsApplicationCustomAppInput {
+				diags = item.As(ctx, &itemApplicationCustomAppInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationCustomAppInput)
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"Object Ref transformation failed",
+						err.Error(),
+					)
+					return
+				}
+
+				input.Rule.Application.CustomApp = append(input.Rule.Application.CustomApp, &cato_models.CustomApplicationRefInput{
+					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+					Input: ObjectRefOutput.Input,
+				})
+			}
+		}
+
+		// setting application ip range
+		if !applicationInput.IPRange.IsNull() {
+			elementsApplicationIPRangeInput := make([]types.Object, 0, len(applicationInput.IPRange.Elements()))
+			diags = applicationInput.IPRange.ElementsAs(ctx, &elementsApplicationIPRangeInput, false)
+			resp.Diagnostics.Append(diags...)
+
+			var itemApplicationIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_IPRange
+			for _, item := range elementsApplicationIPRangeInput {
+				diags = item.As(ctx, &itemApplicationIPRangeInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				input.Rule.Application.IPRange = append(input.Rule.Application.IPRange, &cato_models.IPAddressRangeInput{
+					From: itemApplicationIPRangeInput.From.ValueString(),
+					To:   itemApplicationIPRangeInput.To.ValueString(),
+				})
+			}
+		}
+
+		// setting application global ip range
+		if !applicationInput.GlobalIPRange.IsNull() {
+			elementsApplicationGlobalIPRangeInput := make([]types.Object, 0, len(applicationInput.GlobalIPRange.Elements()))
+			diags = applicationInput.GlobalIPRange.ElementsAs(ctx, &elementsApplicationGlobalIPRangeInput, false)
+			resp.Diagnostics.Append(diags...)
+
+			var itemApplicationGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_GlobalIPRange
+			for _, item := range elementsApplicationGlobalIPRangeInput {
+				diags = item.As(ctx, &itemApplicationGlobalIPRangeInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationGlobalIPRangeInput)
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"Object Ref transformation failed",
+						err.Error(),
+					)
+					return
+				}
+
+				input.Rule.Application.GlobalIPRange = append(input.Rule.Application.GlobalIPRange, &cato_models.GlobalIPRangeRefInput{
+					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+					Input: ObjectRefOutput.Input,
+				})
+			}
+		}
+
+		// setting application app category
+		if !applicationInput.AppCategory.IsNull() {
+			elementsApplicationAppCategoryInput := make([]types.Object, 0, len(applicationInput.AppCategory.Elements()))
+			diags = applicationInput.AppCategory.ElementsAs(ctx, &elementsApplicationAppCategoryInput, false)
+			resp.Diagnostics.Append(diags...)
+
+			var itemApplicationAppCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_AppCategory
+			for _, item := range elementsApplicationAppCategoryInput {
+				diags = item.As(ctx, &itemApplicationAppCategoryInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationAppCategoryInput)
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"Object Ref transformation failed",
+						err.Error(),
+					)
+					return
+				}
+
+				input.Rule.Application.AppCategory = append(input.Rule.Application.AppCategory, &cato_models.ApplicationCategoryRefInput{
+					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+					Input: ObjectRefOutput.Input,
+				})
+			}
+		}
+
+		// setting application custom app category
+		if !applicationInput.CustomCategory.IsNull() {
+			elementsApplicationCustomCategoryInput := make([]types.Object, 0, len(applicationInput.CustomCategory.Elements()))
+			diags = applicationInput.CustomCategory.ElementsAs(ctx, &elementsApplicationCustomCategoryInput, false)
+			resp.Diagnostics.Append(diags...)
+
+			var itemApplicationCustomCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_CustomCategory
+			for _, item := range elementsApplicationCustomCategoryInput {
+				diags = item.As(ctx, &itemApplicationCustomCategoryInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationCustomCategoryInput)
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"Object Ref transformation failed",
+						err.Error(),
+					)
+					return
+				}
+
+				input.Rule.Application.CustomCategory = append(input.Rule.Application.CustomCategory, &cato_models.CustomCategoryRefInput{
+					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+					Input: ObjectRefOutput.Input,
+				})
+			}
+		}
+
+		// setting application sanctionned apps category
+		if !applicationInput.SanctionedAppsCategory.IsNull() {
+			elementsApplicationSanctionedAppsCategoryInput := make([]types.Object, 0, len(applicationInput.SanctionedAppsCategory.Elements()))
+			diags = applicationInput.SanctionedAppsCategory.ElementsAs(ctx, &elementsApplicationSanctionedAppsCategoryInput, false)
+			resp.Diagnostics.Append(diags...)
+
+			var itemApplicationSanctionedAppsCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_SanctionedAppsCategory
+			for _, item := range elementsApplicationSanctionedAppsCategoryInput {
+				diags = item.As(ctx, &itemApplicationSanctionedAppsCategoryInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationSanctionedAppsCategoryInput)
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"Object Ref transformation failed",
+						err.Error(),
+					)
+					return
+				}
+
+				input.Rule.Application.SanctionedAppsCategory = append(input.Rule.Application.SanctionedAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
 					By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 					Input: ObjectRefOutput.Input,
 				})
@@ -3951,7 +5276,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 	// setting service
 	if !ruleInput.Service.IsNull() {
 
-		serviceInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service{}
+		serviceInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Service{}
 
 		diags = ruleInput.Service.As(ctx, &serviceInput, basetypes.ObjectAsOptions{})
 		resp.Diagnostics.Append(diags...)
@@ -3968,7 +5293,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 				return
 			}
 
-			var itemServiceStandardInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Standard
+			var itemServiceStandardInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Standard
 			for _, item := range elementsServiceStandardInput {
 				diags = item.As(ctx, &itemServiceStandardInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
@@ -3998,7 +5323,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 				return
 			}
 
-			var itemServiceCustomInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Custom
+			var itemServiceCustomInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Custom
 			for _, item := range elementsServiceCustomInput {
 				diags = item.As(ctx, &itemServiceCustomInput, basetypes.ObjectAsOptions{})
 
@@ -4022,7 +5347,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 
 				// setting service custom port range
 				if !itemServiceCustomInput.PortRange.IsNull() {
-					var itemPortRange Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Custom_PortRange
+					var itemPortRange Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Custom_PortRange
 					diags = itemServiceCustomInput.PortRange.As(ctx, &itemPortRange, basetypes.ObjectAsOptions{})
 
 					inputPortRange := cato_models.PortRangeInput{
@@ -4042,7 +5367,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 	// setting tracking
 	if !ruleInput.Tracking.IsNull() {
 
-		trackingInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking{}
+		trackingInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking{}
 		diags = ruleInput.Tracking.As(ctx, &trackingInput, basetypes.ObjectAsOptions{})
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
@@ -4050,7 +5375,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 		}
 
 		// setting tracking event
-		trackingEventInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking_Event{}
+		trackingEventInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Event{}
 		diags = trackingInput.Event.As(ctx, &trackingEventInput, basetypes.ObjectAsOptions{})
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
@@ -4065,7 +5390,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 		}
 		if !trackingInput.Alert.IsNull() {
 
-			trackingAlertInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking_Alert{}
+			trackingAlertInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Alert{}
 			diags = trackingInput.Alert.As(ctx, &trackingAlertInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
 			if resp.Diagnostics.HasError() {
@@ -4083,7 +5408,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					return
 				}
 
-				var itemAlertSubscriptionGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
+				var itemAlertSubscriptionGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
 				for _, item := range elementsAlertSubscriptionGroupInput {
 					diags = item.As(ctx, &itemAlertSubscriptionGroupInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -4114,7 +5439,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 						return
 					}
 
-					var itemAlertWebHookInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
+					var itemAlertWebHookInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
 					for _, item := range elementsAlertWebHookInput {
 						diags = item.As(ctx, &itemAlertWebHookInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4145,7 +5470,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					return
 				}
 
-				var itemAlertMailingListInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
+				var itemAlertMailingListInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Alert_SubscriptionGroup
 				for _, item := range elementsAlertMailingListInput {
 					diags = item.As(ctx, &itemAlertMailingListInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -4176,7 +5501,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 	// setting schedule
 	if !ruleInput.Schedule.IsNull() {
 
-		scheduleInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Schedule{}
+		scheduleInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Schedule{}
 		diags = ruleInput.Schedule.As(ctx, &scheduleInput, basetypes.ObjectAsOptions{})
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
@@ -4189,7 +5514,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 		if !scheduleInput.CustomTimeframe.IsNull() {
 			input.Rule.Schedule.CustomTimeframe = &cato_models.PolicyCustomTimeframeUpdateInput{}
 
-			customeTimeFrameInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Schedule_CustomTimeframe{}
+			customeTimeFrameInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Schedule_CustomTimeframe{}
 			diags = scheduleInput.CustomTimeframe.As(ctx, &customeTimeFrameInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
 			if resp.Diagnostics.HasError() {
@@ -4204,7 +5529,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 		if !scheduleInput.CustomRecurring.IsNull() {
 			input.Rule.Schedule.CustomRecurring = &cato_models.PolicyCustomRecurringUpdateInput{}
 
-			customRecurringInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Schedule_CustomRecurring{}
+			customRecurringInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Schedule_CustomRecurring{}
 			diags = scheduleInput.CustomRecurring.As(ctx, &customRecurringInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
 			if resp.Diagnostics.HasError() {
@@ -4234,16 +5559,19 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 		resp.Diagnostics.Append(diags...)
 
 		// loop over exceptions
-		var itemExceptionsInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Exceptions
+		var itemExceptionsInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Exceptions
 		for _, item := range elementsExceptionsInput {
 
-			exceptionInput := cato_models.InternetFirewallRuleExceptionInput{}
+			exceptionInput := cato_models.WanFirewallRuleExceptionInput{}
 
 			diags = item.As(ctx, &itemExceptionsInput, basetypes.ObjectAsOptions{})
 			resp.Diagnostics.Append(diags...)
 
 			// setting exception name
 			exceptionInput.Name = itemExceptionsInput.Name.ValueString()
+
+			// setting exception direction
+			exceptionInput.Direction = cato_models.WanFirewallDirectionEnum(itemExceptionsInput.Direction.ValueString())
 
 			// setting exception connection origin
 			if !itemExceptionsInput.ConnectionOrigin.IsNull() {
@@ -4255,8 +5583,8 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			// setting source
 			if !itemExceptionsInput.Source.IsNull() {
 
-				exceptionInput.Source = &cato_models.InternetFirewallSourceInput{}
-				sourceInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source{}
+				exceptionInput.Source = &cato_models.WanFirewallSourceInput{}
+				sourceInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Source{}
 				diags = itemExceptionsInput.Source.As(ctx, &sourceInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 
@@ -4278,7 +5606,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.Host.ElementsAs(ctx, &elementsSourceHostInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceHostInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Host
+					var itemSourceHostInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Host
 					for _, item := range elementsSourceHostInput {
 						diags = item.As(ctx, &itemSourceHostInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4305,7 +5633,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.Site.ElementsAs(ctx, &elementsSourceSiteInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceSiteInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Site
+					var itemSourceSiteInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Site
 					for _, item := range elementsSourceSiteInput {
 						diags = item.As(ctx, &itemSourceSiteInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4332,7 +5660,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.IPRange.ElementsAs(ctx, &elementsSourceIPRangeInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_IPRange
+					var itemSourceIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_IPRange
 					for _, item := range elementsSourceIPRangeInput {
 						diags = item.As(ctx, &itemSourceIPRangeInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4350,7 +5678,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.GlobalIPRange.ElementsAs(ctx, &elementsSourceGlobalIPRangeInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceGlobalIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_GlobalIPRange
+					var itemSourceGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_GlobalIPRange
 					for _, item := range elementsSourceGlobalIPRangeInput {
 						diags = item.As(ctx, &itemSourceGlobalIPRangeInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4377,7 +5705,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.NetworkInterface.ElementsAs(ctx, &elementsSourceNetworkInterfaceInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceNetworkInterfaceInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_NetworkInterface
+					var itemSourceNetworkInterfaceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_NetworkInterface
 					for _, item := range elementsSourceNetworkInterfaceInput {
 						diags = item.As(ctx, &itemSourceNetworkInterfaceInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4404,7 +5732,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.SiteNetworkSubnet.ElementsAs(ctx, &elementsSourceSiteNetworkSubnetInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceSiteNetworkSubnetInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_SiteNetworkSubnet
+					var itemSourceSiteNetworkSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_SiteNetworkSubnet
 					for _, item := range elementsSourceSiteNetworkSubnetInput {
 						diags = item.As(ctx, &itemSourceSiteNetworkSubnetInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4431,7 +5759,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.FloatingSubnet.ElementsAs(ctx, &elementsSourceFloatingSubnetInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceFloatingSubnetInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_FloatingSubnet
+					var itemSourceFloatingSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_FloatingSubnet
 					for _, item := range elementsSourceFloatingSubnetInput {
 						diags = item.As(ctx, &itemSourceFloatingSubnetInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4458,7 +5786,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.User.ElementsAs(ctx, &elementsSourceUserInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceUserInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_User
+					var itemSourceUserInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_User
 					for _, item := range elementsSourceUserInput {
 						diags = item.As(ctx, &itemSourceUserInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4485,7 +5813,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.UsersGroup.ElementsAs(ctx, &elementsSourceUsersGroupInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceUsersGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_UsersGroup
+					var itemSourceUsersGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_UsersGroup
 					for _, item := range elementsSourceUsersGroupInput {
 						diags = item.As(ctx, &itemSourceUsersGroupInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4512,7 +5840,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.Group.ElementsAs(ctx, &elementsSourceGroupInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_Group
+					var itemSourceGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_Group
 					for _, item := range elementsSourceGroupInput {
 						diags = item.As(ctx, &itemSourceGroupInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4539,7 +5867,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = sourceInput.SystemGroup.ElementsAs(ctx, &elementsSourceSystemGroupInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemSourceSystemGroupInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Source_SystemGroup
+					var itemSourceSystemGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Source_SystemGroup
 					for _, item := range elementsSourceSystemGroupInput {
 						diags = item.As(ctx, &itemSourceSystemGroupInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4569,7 +5897,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 				diags = itemExceptionsInput.Country.ElementsAs(ctx, &elementsCountryInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemCountryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Country
+				var itemCountryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Country
 				for _, item := range elementsCountryInput {
 					diags = item.As(ctx, &itemCountryInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -4598,7 +5926,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 				diags = itemExceptionsInput.Device.ElementsAs(ctx, &elementsDeviceInput, false)
 				resp.Diagnostics.Append(diags...)
 
-				var itemDeviceInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Device
+				var itemDeviceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Device
 				for _, item := range elementsDeviceInput {
 					diags = item.As(ctx, &itemDeviceInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
@@ -4631,8 +5959,8 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			// setting destination
 			if !itemExceptionsInput.Destination.IsNull() {
 
-				exceptionInput.Destination = &cato_models.InternetFirewallDestinationInput{}
-				destinationInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination{}
+				exceptionInput.Destination = &cato_models.WanFirewallDestinationInput{}
+				destinationInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination{}
 				diags = itemExceptionsInput.Destination.As(ctx, &destinationInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 
@@ -4648,36 +5976,18 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					resp.Diagnostics.Append(diags...)
 				}
 
-				// setting destination domain
-				if !destinationInput.Domain.IsNull() {
-					diags = destinationInput.Domain.ElementsAs(ctx, &exceptionInput.Destination.Domain, false)
-					resp.Diagnostics.Append(diags...)
-				}
-
-				// setting destination fqdn
-				if !destinationInput.Fqdn.IsNull() {
-					diags = destinationInput.Fqdn.ElementsAs(ctx, &exceptionInput.Destination.Fqdn, false)
-					resp.Diagnostics.Append(diags...)
-				}
-
-				// setting destination remote asn
-				if !destinationInput.RemoteAsn.IsNull() {
-					diags = destinationInput.RemoteAsn.ElementsAs(ctx, &exceptionInput.Destination.RemoteAsn, false)
-					resp.Diagnostics.Append(diags...)
-				}
-
-				// setting destination application
-				if !destinationInput.Application.IsNull() {
-					elementsDestinationApplicationInput := make([]types.Object, 0, len(destinationInput.Application.Elements()))
-					diags = destinationInput.Application.ElementsAs(ctx, &elementsDestinationApplicationInput, false)
+				// setting destination host
+				if !destinationInput.Host.IsNull() {
+					elementsDestinationHostInput := make([]types.Object, 0, len(destinationInput.Host.Elements()))
+					diags = destinationInput.Host.ElementsAs(ctx, &elementsDestinationHostInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemDestinationApplicationInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Application
-					for _, item := range elementsDestinationApplicationInput {
-						diags = item.As(ctx, &itemDestinationApplicationInput, basetypes.ObjectAsOptions{})
+					var itemDestinationHostInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Host
+					for _, item := range elementsDestinationHostInput {
+						diags = item.As(ctx, &itemDestinationHostInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
 
-						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationApplicationInput)
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationHostInput)
 						if err != nil {
 							resp.Diagnostics.AddError(
 								"Object Ref transformation failed",
@@ -4686,25 +5996,25 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 							return
 						}
 
-						exceptionInput.Destination.Application = append(exceptionInput.Destination.Application, &cato_models.ApplicationRefInput{
+						exceptionInput.Destination.Host = append(exceptionInput.Destination.Host, &cato_models.HostRefInput{
 							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 							Input: ObjectRefOutput.Input,
 						})
 					}
 				}
 
-				// setting destination custom app
-				if !destinationInput.CustomApp.IsNull() {
-					elementsDestinationCustomAppInput := make([]types.Object, 0, len(destinationInput.CustomApp.Elements()))
-					diags = destinationInput.CustomApp.ElementsAs(ctx, &elementsDestinationCustomAppInput, false)
+				// setting destination site
+				if !destinationInput.Site.IsNull() {
+					elementsDestinationSiteInput := make([]types.Object, 0, len(destinationInput.Site.Elements()))
+					diags = destinationInput.Site.ElementsAs(ctx, &elementsDestinationSiteInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemDestinationCustomAppInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomApp
-					for _, item := range elementsDestinationCustomAppInput {
-						diags = item.As(ctx, &itemDestinationCustomAppInput, basetypes.ObjectAsOptions{})
+					var itemDestinationSiteInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Site
+					for _, item := range elementsDestinationSiteInput {
+						diags = item.As(ctx, &itemDestinationSiteInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
 
-						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCustomAppInput)
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSiteInput)
 						if err != nil {
 							resp.Diagnostics.AddError(
 								"Object Ref transformation failed",
@@ -4713,7 +6023,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 							return
 						}
 
-						exceptionInput.Destination.CustomApp = append(exceptionInput.Destination.CustomApp, &cato_models.CustomApplicationRefInput{
+						exceptionInput.Destination.Site = append(exceptionInput.Destination.Site, &cato_models.SiteRefInput{
 							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 							Input: ObjectRefOutput.Input,
 						})
@@ -4726,7 +6036,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = destinationInput.IPRange.ElementsAs(ctx, &elementsDestinationIPRangeInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemDestinationIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_IPRange
+					var itemDestinationIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_IPRange
 					for _, item := range elementsDestinationIPRangeInput {
 						diags = item.As(ctx, &itemDestinationIPRangeInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4744,7 +6054,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					diags = destinationInput.GlobalIPRange.ElementsAs(ctx, &elementsDestinationGlobalIPRangeInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemDestinationGlobalIPRangeInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_GlobalIPRange
+					var itemDestinationGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_GlobalIPRange
 					for _, item := range elementsDestinationGlobalIPRangeInput {
 						diags = item.As(ctx, &itemDestinationGlobalIPRangeInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4752,7 +6062,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationGlobalIPRangeInput)
 						if err != nil {
 							resp.Diagnostics.AddError(
-								"Object Ref transformation failed",
+								"Object Ref transformation failed for",
 								err.Error(),
 							)
 							return
@@ -4765,18 +6075,18 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 					}
 				}
 
-				// setting destination app category
-				if !destinationInput.AppCategory.IsNull() {
-					elementsDestinationAppCategoryInput := make([]types.Object, 0, len(destinationInput.AppCategory.Elements()))
-					diags = destinationInput.AppCategory.ElementsAs(ctx, &elementsDestinationAppCategoryInput, false)
+				// setting destination network interface
+				if !destinationInput.NetworkInterface.IsNull() {
+					elementsDestinationNetworkInterfaceInput := make([]types.Object, 0, len(destinationInput.NetworkInterface.Elements()))
+					diags = destinationInput.NetworkInterface.ElementsAs(ctx, &elementsDestinationNetworkInterfaceInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemDestinationAppCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_AppCategory
-					for _, item := range elementsDestinationAppCategoryInput {
-						diags = item.As(ctx, &itemDestinationAppCategoryInput, basetypes.ObjectAsOptions{})
+					var itemDestinationNetworkInterfaceInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_NetworkInterface
+					for _, item := range elementsDestinationNetworkInterfaceInput {
+						diags = item.As(ctx, &itemDestinationNetworkInterfaceInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
 
-						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationAppCategoryInput)
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationNetworkInterfaceInput)
 						if err != nil {
 							resp.Diagnostics.AddError(
 								"Object Ref transformation failed",
@@ -4785,25 +6095,25 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 							return
 						}
 
-						exceptionInput.Destination.AppCategory = append(exceptionInput.Destination.AppCategory, &cato_models.ApplicationCategoryRefInput{
+						exceptionInput.Destination.NetworkInterface = append(exceptionInput.Destination.NetworkInterface, &cato_models.NetworkInterfaceRefInput{
 							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 							Input: ObjectRefOutput.Input,
 						})
 					}
 				}
 
-				// setting destination custom app category
-				if !destinationInput.CustomCategory.IsNull() {
-					elementsDestinationCustomCategoryInput := make([]types.Object, 0, len(destinationInput.CustomCategory.Elements()))
-					diags = destinationInput.CustomCategory.ElementsAs(ctx, &elementsDestinationCustomCategoryInput, false)
+				// setting destination site network subnet
+				if !destinationInput.SiteNetworkSubnet.IsNull() {
+					elementsDestinationSiteNetworkSubnetInput := make([]types.Object, 0, len(destinationInput.SiteNetworkSubnet.Elements()))
+					diags = destinationInput.SiteNetworkSubnet.ElementsAs(ctx, &elementsDestinationSiteNetworkSubnetInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemDestinationCustomCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_CustomCategory
-					for _, item := range elementsDestinationCustomCategoryInput {
-						diags = item.As(ctx, &itemDestinationCustomCategoryInput, basetypes.ObjectAsOptions{})
+					var itemDestinationSiteNetworkSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_SiteNetworkSubnet
+					for _, item := range elementsDestinationSiteNetworkSubnetInput {
+						diags = item.As(ctx, &itemDestinationSiteNetworkSubnetInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
 
-						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCustomCategoryInput)
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSiteNetworkSubnetInput)
 						if err != nil {
 							resp.Diagnostics.AddError(
 								"Object Ref transformation failed",
@@ -4812,25 +6122,25 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 							return
 						}
 
-						exceptionInput.Destination.CustomCategory = append(exceptionInput.Destination.CustomCategory, &cato_models.CustomCategoryRefInput{
+						exceptionInput.Destination.SiteNetworkSubnet = append(exceptionInput.Destination.SiteNetworkSubnet, &cato_models.SiteNetworkSubnetRefInput{
 							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 							Input: ObjectRefOutput.Input,
 						})
 					}
 				}
 
-				// setting destination sanctionned apps category
-				if !destinationInput.SanctionedAppsCategory.IsNull() {
-					elementsDestinationSanctionedAppsCategoryInput := make([]types.Object, 0, len(destinationInput.SanctionedAppsCategory.Elements()))
-					diags = destinationInput.SanctionedAppsCategory.ElementsAs(ctx, &elementsDestinationSanctionedAppsCategoryInput, false)
+				// setting destination floating subnet
+				if !destinationInput.FloatingSubnet.IsNull() {
+					elementsDestinationFloatingSubnetInput := make([]types.Object, 0, len(destinationInput.FloatingSubnet.Elements()))
+					diags = destinationInput.FloatingSubnet.ElementsAs(ctx, &elementsDestinationFloatingSubnetInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemDestinationSanctionedAppsCategoryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_SanctionedAppsCategory
-					for _, item := range elementsDestinationSanctionedAppsCategoryInput {
-						diags = item.As(ctx, &itemDestinationSanctionedAppsCategoryInput, basetypes.ObjectAsOptions{})
+					var itemDestinationFloatingSubnetInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_FloatingSubnet
+					for _, item := range elementsDestinationFloatingSubnetInput {
+						diags = item.As(ctx, &itemDestinationFloatingSubnetInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
 
-						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSanctionedAppsCategoryInput)
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationFloatingSubnetInput)
 						if err != nil {
 							resp.Diagnostics.AddError(
 								"Object Ref transformation failed",
@@ -4839,25 +6149,25 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 							return
 						}
 
-						exceptionInput.Destination.SanctionedAppsCategory = append(exceptionInput.Destination.SanctionedAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
+						exceptionInput.Destination.FloatingSubnet = append(exceptionInput.Destination.FloatingSubnet, &cato_models.FloatingSubnetRefInput{
 							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 							Input: ObjectRefOutput.Input,
 						})
 					}
 				}
 
-				// setting destination country
-				if !destinationInput.Country.IsNull() {
-					elementsDestinationCountryInput := make([]types.Object, 0, len(destinationInput.Country.Elements()))
-					diags = destinationInput.Country.ElementsAs(ctx, &elementsDestinationCountryInput, false)
+				// setting destination user
+				if !destinationInput.User.IsNull() {
+					elementsDestinationUserInput := make([]types.Object, 0, len(destinationInput.User.Elements()))
+					diags = destinationInput.User.ElementsAs(ctx, &elementsDestinationUserInput, false)
 					resp.Diagnostics.Append(diags...)
 
-					var itemDestinationCountryInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Destination_Country
-					for _, item := range elementsDestinationCountryInput {
-						diags = item.As(ctx, &itemDestinationCountryInput, basetypes.ObjectAsOptions{})
+					var itemDestinationUserInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_User
+					for _, item := range elementsDestinationUserInput {
+						diags = item.As(ctx, &itemDestinationUserInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
 
-						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationCountryInput)
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationUserInput)
 						if err != nil {
 							resp.Diagnostics.AddError(
 								"Object Ref transformation failed",
@@ -4866,7 +6176,301 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 							return
 						}
 
-						exceptionInput.Destination.Country = append(exceptionInput.Destination.Country, &cato_models.CountryRefInput{
+						exceptionInput.Destination.User = append(exceptionInput.Destination.User, &cato_models.UserRefInput{
+							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+							Input: ObjectRefOutput.Input,
+						})
+					}
+				}
+
+				// setting destination users group
+				if !destinationInput.UsersGroup.IsNull() {
+					elementsDestinationUsersGroupInput := make([]types.Object, 0, len(destinationInput.UsersGroup.Elements()))
+					diags = destinationInput.UsersGroup.ElementsAs(ctx, &elementsDestinationUsersGroupInput, false)
+					resp.Diagnostics.Append(diags...)
+
+					var itemDestinationUsersGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_UsersGroup
+					for _, item := range elementsDestinationUsersGroupInput {
+						diags = item.As(ctx, &itemDestinationUsersGroupInput, basetypes.ObjectAsOptions{})
+						resp.Diagnostics.Append(diags...)
+
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationUsersGroupInput)
+						if err != nil {
+							resp.Diagnostics.AddError(
+								"Object Ref transformation failed",
+								err.Error(),
+							)
+							return
+						}
+
+						exceptionInput.Destination.UsersGroup = append(exceptionInput.Destination.UsersGroup, &cato_models.UsersGroupRefInput{
+							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+							Input: ObjectRefOutput.Input,
+						})
+					}
+				}
+
+				// setting destination group
+				if !destinationInput.Group.IsNull() {
+					elementsDestinationGroupInput := make([]types.Object, 0, len(destinationInput.Group.Elements()))
+					diags = destinationInput.Group.ElementsAs(ctx, &elementsDestinationGroupInput, false)
+					resp.Diagnostics.Append(diags...)
+
+					var itemDestinationGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_Group
+					for _, item := range elementsDestinationGroupInput {
+						diags = item.As(ctx, &itemDestinationGroupInput, basetypes.ObjectAsOptions{})
+						resp.Diagnostics.Append(diags...)
+
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationGroupInput)
+						if err != nil {
+							resp.Diagnostics.AddError(
+								"Object Ref transformation failed",
+								err.Error(),
+							)
+							return
+						}
+
+						exceptionInput.Destination.Group = append(exceptionInput.Destination.Group, &cato_models.GroupRefInput{
+							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+							Input: ObjectRefOutput.Input,
+						})
+					}
+				}
+
+				// setting destination system group
+				if !destinationInput.SystemGroup.IsNull() {
+					elementsDestinationSystemGroupInput := make([]types.Object, 0, len(destinationInput.SystemGroup.Elements()))
+					diags = destinationInput.SystemGroup.ElementsAs(ctx, &elementsDestinationSystemGroupInput, false)
+					resp.Diagnostics.Append(diags...)
+
+					var itemDestinationSystemGroupInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Destination_SystemGroup
+					for _, item := range elementsDestinationSystemGroupInput {
+						diags = item.As(ctx, &itemDestinationSystemGroupInput, basetypes.ObjectAsOptions{})
+						resp.Diagnostics.Append(diags...)
+
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemDestinationSystemGroupInput)
+						if err != nil {
+							resp.Diagnostics.AddError(
+								"Object Ref transformation failed",
+								err.Error(),
+							)
+							return
+						}
+
+						exceptionInput.Destination.SystemGroup = append(exceptionInput.Destination.SystemGroup, &cato_models.SystemGroupRefInput{
+							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+							Input: ObjectRefOutput.Input,
+						})
+					}
+				}
+			}
+
+			// setting application
+			if !itemExceptionsInput.Application.IsNull() {
+
+				exceptionInput.Application = &cato_models.WanFirewallApplicationInput{}
+				applicationInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Application{}
+				diags = itemExceptionsInput.Application.As(ctx, &applicationInput, basetypes.ObjectAsOptions{})
+				resp.Diagnostics.Append(diags...)
+
+				// setting application IP
+				if !applicationInput.IP.IsNull() {
+					diags = applicationInput.IP.ElementsAs(ctx, &exceptionInput.Application.IP, false)
+					resp.Diagnostics.Append(diags...)
+				}
+
+				// setting application subnet
+				if !applicationInput.Subnet.IsNull() {
+					diags = applicationInput.Subnet.ElementsAs(ctx, &exceptionInput.Application.Subnet, false)
+					resp.Diagnostics.Append(diags...)
+				}
+
+				// setting application domain
+				if !applicationInput.Domain.IsNull() {
+					diags = applicationInput.Domain.ElementsAs(ctx, &exceptionInput.Application.Domain, false)
+					resp.Diagnostics.Append(diags...)
+				}
+
+				// setting application fqdn
+				if !applicationInput.Fqdn.IsNull() {
+					diags = applicationInput.Fqdn.ElementsAs(ctx, &exceptionInput.Application.Fqdn, false)
+					resp.Diagnostics.Append(diags...)
+				}
+
+				// setting application application
+				if !applicationInput.Application.IsNull() {
+					elementsApplicationApplicationInput := make([]types.Object, 0, len(applicationInput.Application.Elements()))
+					diags = applicationInput.Application.ElementsAs(ctx, &elementsApplicationApplicationInput, false)
+					resp.Diagnostics.Append(diags...)
+
+					var itemApplicationApplicationInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_Application
+					for _, item := range elementsApplicationApplicationInput {
+						diags = item.As(ctx, &itemApplicationApplicationInput, basetypes.ObjectAsOptions{})
+						resp.Diagnostics.Append(diags...)
+
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationApplicationInput)
+						if err != nil {
+							resp.Diagnostics.AddError(
+								"Object Ref transformation failed",
+								err.Error(),
+							)
+							return
+						}
+
+						exceptionInput.Application.Application = append(exceptionInput.Application.Application, &cato_models.ApplicationRefInput{
+							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+							Input: ObjectRefOutput.Input,
+						})
+					}
+				}
+
+				// setting application custom app
+				if !applicationInput.CustomApp.IsNull() {
+					elementsApplicationCustomAppInput := make([]types.Object, 0, len(applicationInput.CustomApp.Elements()))
+					diags = applicationInput.CustomApp.ElementsAs(ctx, &elementsApplicationCustomAppInput, false)
+					resp.Diagnostics.Append(diags...)
+
+					var itemApplicationCustomAppInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_CustomApp
+					for _, item := range elementsApplicationCustomAppInput {
+						diags = item.As(ctx, &itemApplicationCustomAppInput, basetypes.ObjectAsOptions{})
+						resp.Diagnostics.Append(diags...)
+
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationCustomAppInput)
+						if err != nil {
+							resp.Diagnostics.AddError(
+								"Object Ref transformation failed",
+								err.Error(),
+							)
+							return
+						}
+
+						exceptionInput.Application.CustomApp = append(exceptionInput.Application.CustomApp, &cato_models.CustomApplicationRefInput{
+							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+							Input: ObjectRefOutput.Input,
+						})
+					}
+				}
+
+				// setting application ip range
+				if !applicationInput.IPRange.IsNull() {
+					elementsApplicationIPRangeInput := make([]types.Object, 0, len(applicationInput.IPRange.Elements()))
+					diags = applicationInput.IPRange.ElementsAs(ctx, &elementsApplicationIPRangeInput, false)
+					resp.Diagnostics.Append(diags...)
+
+					var itemApplicationIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_IPRange
+					for _, item := range elementsApplicationIPRangeInput {
+						diags = item.As(ctx, &itemApplicationIPRangeInput, basetypes.ObjectAsOptions{})
+						resp.Diagnostics.Append(diags...)
+
+						exceptionInput.Application.IPRange = append(exceptionInput.Application.IPRange, &cato_models.IPAddressRangeInput{
+							From: itemApplicationIPRangeInput.From.ValueString(),
+							To:   itemApplicationIPRangeInput.To.ValueString(),
+						})
+					}
+				}
+
+				// setting application global ip range
+				if !applicationInput.GlobalIPRange.IsNull() {
+					elementsApplicationGlobalIPRangeInput := make([]types.Object, 0, len(applicationInput.GlobalIPRange.Elements()))
+					diags = applicationInput.GlobalIPRange.ElementsAs(ctx, &elementsApplicationGlobalIPRangeInput, false)
+					resp.Diagnostics.Append(diags...)
+
+					var itemApplicationGlobalIPRangeInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_GlobalIPRange
+					for _, item := range elementsApplicationGlobalIPRangeInput {
+						diags = item.As(ctx, &itemApplicationGlobalIPRangeInput, basetypes.ObjectAsOptions{})
+						resp.Diagnostics.Append(diags...)
+
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationGlobalIPRangeInput)
+						if err != nil {
+							resp.Diagnostics.AddError(
+								"Object Ref transformation failed",
+								err.Error(),
+							)
+							return
+						}
+
+						exceptionInput.Application.GlobalIPRange = append(exceptionInput.Application.GlobalIPRange, &cato_models.GlobalIPRangeRefInput{
+							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+							Input: ObjectRefOutput.Input,
+						})
+					}
+				}
+
+				// setting application app category
+				if !applicationInput.AppCategory.IsNull() {
+					elementsApplicationAppCategoryInput := make([]types.Object, 0, len(applicationInput.AppCategory.Elements()))
+					diags = applicationInput.AppCategory.ElementsAs(ctx, &elementsApplicationAppCategoryInput, false)
+					resp.Diagnostics.Append(diags...)
+
+					var itemApplicationAppCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_AppCategory
+					for _, item := range elementsApplicationAppCategoryInput {
+						diags = item.As(ctx, &itemApplicationAppCategoryInput, basetypes.ObjectAsOptions{})
+						resp.Diagnostics.Append(diags...)
+
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationAppCategoryInput)
+						if err != nil {
+							resp.Diagnostics.AddError(
+								"Object Ref transformation failed",
+								err.Error(),
+							)
+							return
+						}
+
+						exceptionInput.Application.AppCategory = append(exceptionInput.Application.AppCategory, &cato_models.ApplicationCategoryRefInput{
+							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+							Input: ObjectRefOutput.Input,
+						})
+					}
+				}
+
+				// setting application custom app category
+				if !applicationInput.CustomCategory.IsNull() {
+					elementsApplicationCustomCategoryInput := make([]types.Object, 0, len(applicationInput.CustomCategory.Elements()))
+					diags = applicationInput.CustomCategory.ElementsAs(ctx, &elementsApplicationCustomCategoryInput, false)
+					resp.Diagnostics.Append(diags...)
+
+					var itemApplicationCustomCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_CustomCategory
+					for _, item := range elementsApplicationCustomCategoryInput {
+						diags = item.As(ctx, &itemApplicationCustomCategoryInput, basetypes.ObjectAsOptions{})
+						resp.Diagnostics.Append(diags...)
+
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationCustomCategoryInput)
+						if err != nil {
+							resp.Diagnostics.AddError(
+								"Object Ref transformation failed",
+								err.Error(),
+							)
+							return
+						}
+
+						exceptionInput.Application.CustomCategory = append(exceptionInput.Application.CustomCategory, &cato_models.CustomCategoryRefInput{
+							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
+							Input: ObjectRefOutput.Input,
+						})
+					}
+				}
+
+				// setting application sanctionned apps category
+				if !applicationInput.SanctionedAppsCategory.IsNull() {
+					elementsApplicationSanctionedAppsCategoryInput := make([]types.Object, 0, len(applicationInput.SanctionedAppsCategory.Elements()))
+					diags = applicationInput.SanctionedAppsCategory.ElementsAs(ctx, &elementsApplicationSanctionedAppsCategoryInput, false)
+					resp.Diagnostics.Append(diags...)
+
+					var itemApplicationSanctionedAppsCategoryInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Application_SanctionedAppsCategory
+					for _, item := range elementsApplicationSanctionedAppsCategoryInput {
+						diags = item.As(ctx, &itemApplicationSanctionedAppsCategoryInput, basetypes.ObjectAsOptions{})
+						resp.Diagnostics.Append(diags...)
+
+						ObjectRefOutput, err := utils.TransformObjectRefInput(itemApplicationSanctionedAppsCategoryInput)
+						if err != nil {
+							resp.Diagnostics.AddError(
+								"Object Ref transformation failed",
+								err.Error(),
+							)
+							return
+						}
+
+						exceptionInput.Application.SanctionedAppsCategory = append(exceptionInput.Application.SanctionedAppsCategory, &cato_models.SanctionedAppsCategoryRefInput{
 							By:    cato_models.ObjectRefBy(ObjectRefOutput.By),
 							Input: ObjectRefOutput.Input,
 						})
@@ -4877,8 +6481,8 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			// setting service
 			if !itemExceptionsInput.Service.IsNull() {
 
-				exceptionInput.Service = &cato_models.InternetFirewallServiceTypeInput{}
-				serviceInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service{}
+				exceptionInput.Service = &cato_models.WanFirewallServiceTypeInput{}
+				serviceInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Service{}
 				diags = itemExceptionsInput.Service.As(ctx, &serviceInput, basetypes.ObjectAsOptions{})
 				resp.Diagnostics.Append(diags...)
 				if resp.Diagnostics.HasError() {
@@ -4894,7 +6498,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 						return
 					}
 
-					var itemServiceStandardInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Standard
+					var itemServiceStandardInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Standard
 					for _, item := range elementsServiceStandardInput {
 						diags = item.As(ctx, &itemServiceStandardInput, basetypes.ObjectAsOptions{})
 						resp.Diagnostics.Append(diags...)
@@ -4924,7 +6528,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 						return
 					}
 
-					var itemServiceCustomInput Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Custom
+					var itemServiceCustomInput Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Custom
 					for _, item := range elementsServiceCustomInput {
 						diags = item.As(ctx, &itemServiceCustomInput, basetypes.ObjectAsOptions{})
 
@@ -4948,7 +6552,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 
 						// setting service custom port range
 						if !itemServiceCustomInput.PortRange.IsNull() {
-							var itemPortRange Policy_Policy_InternetFirewall_Policy_Rules_Rule_Service_Custom_PortRange
+							var itemPortRange Policy_Policy_WanFirewall_Policy_Rules_Rule_Service_Custom_PortRange
 							diags = itemServiceCustomInput.PortRange.As(ctx, &itemPortRange, basetypes.ObjectAsOptions{})
 
 							inputPortRange := cato_models.PortRangeInput{
@@ -4975,7 +6579,8 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 	input.Rule.Name = ruleInput.Name.ValueStringPointer()
 	input.Rule.Description = ruleInput.Description.ValueStringPointer()
 	input.Rule.Enabled = ruleInput.Enabled.ValueBoolPointer()
-	input.Rule.Action = (*cato_models.InternetFirewallActionEnum)(ruleInput.Action.ValueStringPointer())
+	input.Rule.Action = (*cato_models.WanFirewallActionEnum)(ruleInput.Action.ValueStringPointer())
+	input.Rule.Direction = (*cato_models.WanFirewallDirectionEnum)(ruleInput.Direction.ValueStringPointer())
 	if !ruleInput.ConnectionOrigin.IsNull() {
 		input.Rule.ConnectionOrigin = (*cato_models.ConnectionOriginEnum)(ruleInput.ConnectionOrigin.ValueStringPointer())
 	} else {
@@ -4987,26 +6592,23 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	mutationInput := &cato_models.InternetFirewallPolicyMutationInput{}
-
-	tflog.Debug(ctx, "internet_fw_policy update", map[string]interface{}{
-		"query": utils.InterfaceToJSONString(mutationInput),
+	tflog.Debug(ctx, "wan_fw_policy update", map[string]interface{}{
 		"input": utils.InterfaceToJSONString(input),
 	})
 
 	//creating new rule
-	updateRule, err := r.client.catov2.PolicyInternetFirewallUpdateRule(ctx, mutationInput, input, r.client.AccountId)
+	updateRule, err := r.client.catov2.PolicyWanFirewallUpdateRule(ctx, input, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Catov2 API PolicyInternetFirewallUpdateRule error",
+			"Catov2 API PolicyWanFirewallUpdateRule error",
 			err.Error(),
 		)
 		return
 	}
 
 	// check for errors
-	if updateRule.Policy.InternetFirewall.UpdateRule.Status != "SUCCESS" {
-		for _, item := range updateRule.Policy.InternetFirewall.UpdateRule.GetErrors() {
+	if updateRule.Policy.WanFirewall.UpdateRule.Status != "SUCCESS" {
+		for _, item := range updateRule.Policy.WanFirewall.UpdateRule.GetErrors() {
 			resp.Diagnostics.AddError(
 				"API Error Creating Resource",
 				fmt.Sprintf("%s : %s", *item.ErrorCode, *item.ErrorMessage),
@@ -5018,10 +6620,10 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 	//publishing new rule
 	tflog.Info(ctx, "publishing new rule")
 	publishDataIfEnabled := &cato_models.PolicyPublishRevisionInput{}
-	_, err = r.client.catov2.PolicyInternetFirewallPublishPolicyRevision(ctx, &cato_models.InternetFirewallPolicyMutationInput{}, publishDataIfEnabled, r.client.AccountId)
+	_, err = r.client.catov2.PolicyWanFirewallPublishPolicyRevision(ctx, publishDataIfEnabled, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Catov2 API PolicyInternetFirewallPublishPolicyRevision error",
+			"Catov2 API PolicyWanFirewallPublishPolicyRevision error",
 			err.Error(),
 		)
 		return
@@ -5034,9 +6636,9 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 	}
 }
 
-func (r *internetFwRuleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *wanFwRuleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 
-	var state InternetFirewallRule
+	var state WanFirewallRule
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -5044,23 +6646,21 @@ func (r *internetFwRuleResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	//retrieve rule ID
-	rule := Policy_Policy_InternetFirewall_Policy_Rules_Rule{}
+	rule := Policy_Policy_WanFirewall_Policy_Rules_Rule{}
 	diags = state.Rule.As(ctx, &rule, basetypes.ObjectAsOptions{})
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	removeMutations := &cato_models.InternetFirewallPolicyMutationInput{}
-	removeRule := cato_models.InternetFirewallRemoveRuleInput{
+	removeRule := cato_models.WanFirewallRemoveRuleInput{
 		ID: rule.ID.ValueString(),
 	}
-	tflog.Debug(ctx, "internet_fw_policy delete", map[string]interface{}{
-		"query": utils.InterfaceToJSONString(removeMutations),
+	tflog.Debug(ctx, "wan_fw_policy delete", map[string]interface{}{
 		"input": utils.InterfaceToJSONString(removeRule),
 	})
 
-	_, err := r.client.catov2.PolicyInternetFirewallRemoveRule(ctx, removeMutations, removeRule, r.client.AccountId)
+	_, err := r.client.catov2.PolicyWanFirewallRemoveRule(ctx, removeRule, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to connect or request the Catov2 API",
@@ -5070,10 +6670,10 @@ func (r *internetFwRuleResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	publishDataIfEnabled := &cato_models.PolicyPublishRevisionInput{}
-	_, err = r.client.catov2.PolicyInternetFirewallPublishPolicyRevision(ctx, &cato_models.InternetFirewallPolicyMutationInput{}, publishDataIfEnabled, r.client.AccountId)
+	_, err = r.client.catov2.PolicyWanFirewallPublishPolicyRevision(ctx, publishDataIfEnabled, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Catov2 API Delete/PolicyInternetFirewallPublishPolicyRevision error",
+			"Catov2 API Delete/PolicyWanFirewallPublishPolicyRevision error",
 			err.Error(),
 		)
 		return

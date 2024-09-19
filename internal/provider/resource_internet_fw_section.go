@@ -165,8 +165,7 @@ func (r *internetFwSectionResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	queryPolicy := &cato_models.InternetFirewallPolicyInput{}
-	body, err := r.client.catov2.Policy(ctx, queryPolicy, r.client.AccountId)
+	body, err := r.client.catov2.Policy(ctx, &cato_models.InternetFirewallPolicyInput{}, &cato_models.WanFirewallPolicyInput{}, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Catov2 API error",
