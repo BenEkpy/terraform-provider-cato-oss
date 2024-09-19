@@ -3882,7 +3882,7 @@ func (r *wanFwRuleResource) Create(ctx context.Context, req resource.CreateReque
 
 					exceptionInput.Application = &cato_models.WanFirewallApplicationInput{}
 					applicationInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Application{}
-					diags = itemExceptionsInput.Destination.As(ctx, &applicationInput, basetypes.ObjectAsOptions{})
+					diags = itemExceptionsInput.Application.As(ctx, &applicationInput, basetypes.ObjectAsOptions{})
 					resp.Diagnostics.Append(diags...)
 
 					// setting application IP
