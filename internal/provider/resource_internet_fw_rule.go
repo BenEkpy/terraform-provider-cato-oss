@@ -3224,10 +3224,12 @@ func (r *internetFwRuleResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	body, err := r.client.catov2.Policy(ctx, &cato_models.InternetFirewallPolicyInput{}, &cato_models.WanFirewallPolicyInput{}, r.client.AccountId)
+	// body, err := r.client.catov2.Policy(ctx, &cato_models.InternetFirewallPolicyInput{}, &cato_models.WanFirewallPolicyInput{}, r.client.AccountId)
+	queryIfwPolicy := &cato_models.InternetFirewallPolicyInput{}
+	body, err := r.client.catov2.PolicyInternetFirewall(ctx, queryIfwPolicy, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Catov2 API error",
+			"Catov2 API PolicyInternetFirewall error",
 			err.Error(),
 		)
 		return
@@ -3253,7 +3255,7 @@ func (r *internetFwRuleResource) Read(ctx context.Context, req resource.ReadRequ
 
 	// remove resource if it doesn't exist anymore
 	if !ruleExist {
-		tflog.Warn(ctx, "internet rule not found, resource removed")
+		tflog.Warn(ctx, "internet firewall rule not found, resource removed")
 		resp.State.RemoveResource(ctx)
 		return
 	}

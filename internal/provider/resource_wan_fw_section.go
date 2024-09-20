@@ -158,52 +158,53 @@ func (r *wanFwSectionResource) Create(ctx context.Context, req resource.CreateRe
 
 func (r *wanFwSectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 
-	// var state WanFirewallSection
-	// diags := req.State.Get(ctx, &state)
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
+	var state WanFirewallSection
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	// body, err := r.client.catov2.Policy(ctx, &cato_models.WanFirewallPolicyInput{}, &cato_models.WanFirewallPolicyInput{}, r.client.AccountId)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Catov2 API error",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
+	queryWanPolicy := &cato_models.WanFirewallPolicyInput{}
+	body, err := r.client.catov2.PolicyWanFirewall(ctx, queryWanPolicy, r.client.AccountId)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Catov2 API error",
+			err.Error(),
+		)
+		return
+	}
 
-	// //retrieve section ID
-	// section := PolicyUpdateSectionInfoInput{}
-	// diags = state.Section.As(ctx, &section, basetypes.ObjectAsOptions{})
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
+	//retrieve section ID
+	section := PolicyUpdateSectionInfoInput{}
+	diags = state.Section.As(ctx, &section, basetypes.ObjectAsOptions{})
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	// sectionList := body.GetPolicy().WanFirewall.Policy.GetSections()
-	// sectionExist := false
-	// for _, sectionListItem := range sectionList {
-	// 	if sectionListItem.GetSection().ID == section.Id.ValueString() {
-	// 		sectionExist = true
+	sectionList := body.GetPolicy().WanFirewall.Policy.GetSections()
+	sectionExist := false
+	for _, sectionListItem := range sectionList {
+		if sectionListItem.GetSection().ID == section.Id.ValueString() {
+			sectionExist = true
 
-	// 		// Need to refresh STATE
-	// 	}
-	// }
+			// Need to refresh STATE
+		}
+	}
 
-	// // remove resource if it doesn't exist anymore
-	// if !sectionExist {
-	// 	tflog.Warn(ctx, "wan section not found, resource removed")
-	// 	resp.State.RemoveResource(ctx)
-	// 	return
-	// }
+	// remove resource if it doesn't exist anymore
+	if !sectionExist {
+		tflog.Warn(ctx, "wan section not found, resource removed")
+		resp.State.RemoveResource(ctx)
+		return
+	}
 
-	// diags = resp.State.Set(ctx, &state)
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 }
 

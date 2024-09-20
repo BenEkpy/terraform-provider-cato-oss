@@ -4255,52 +4255,54 @@ func (r *wanFwRuleResource) Create(ctx context.Context, req resource.CreateReque
 
 func (r *wanFwRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 
-	// var state WanFirewallRule
-	// diags := req.State.Get(ctx, &state)
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
+	var state WanFirewallRule
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// body, err := r.client.catov2.Policy(ctx, &cato_models.InternetFirewallPolicyInput{}, &cato_models.WanFirewallPolicyInput{}, r.client.AccountId)
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Catov2 API error",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
+	queryWanPolicy := &cato_models.WanFirewallPolicyInput{}
+	body, err := r.client.catov2.PolicyWanFirewall(ctx, queryWanPolicy, r.client.AccountId)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Catov2 API PolicyWanFirewall error",
+			err.Error(),
+		)
+		return
+	}
 
-	// //retrieve rule ID
-	// rule := Policy_Policy_WanFirewall_Policy_Rules_Rule{}
-	// diags = state.Rule.As(ctx, &rule, basetypes.ObjectAsOptions{})
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
+	//retrieve rule ID
+	rule := Policy_Policy_WanFirewall_Policy_Rules_Rule{}
+	diags = state.Rule.As(ctx, &rule, basetypes.ObjectAsOptions{})
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	// ruleList := body.GetPolicy().WanFirewall.Policy.GetRules()
-	// ruleExist := false
-	// for _, ruleListItem := range ruleList {
-	// 	if ruleListItem.GetRule().ID == rule.ID.ValueString() {
-	// 		ruleExist = true
+	ruleList := body.GetPolicy().WanFirewall.Policy.GetRules()
+	ruleExist := false
+	for _, ruleListItem := range ruleList {
+		if ruleListItem.GetRule().ID == rule.ID.ValueString() {
+			ruleExist = true
 
-	// 		// Need to refresh STATE
-	// 	}
-	// }
+			// Need to refresh STATE
+		}
+	}
 
-	// // remove resource if it doesn't exist anymore
-	// if !ruleExist {
-	// 	tflog.Warn(ctx, "internet rule not found, resource removed")
-	// 	resp.State.RemoveResource(ctx)
-	// 	return
-	// }
+	// remove resource if it doesn't exist anymore
+	if !ruleExist {
+		tflog.Warn(ctx, "wan firewall rule not found, resource removed")
+		resp.State.RemoveResource(ctx)
+		return
+	}
 
-	// diags = resp.State.Set(ctx, &state)
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func (r *wanFwRuleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
