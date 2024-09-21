@@ -53,9 +53,6 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Description: "",
 						Required:    false,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.RequiresReplace(),
-						},
 					},
 				},
 			},
@@ -3276,6 +3273,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
+	// setting input for update rule
 	input := cato_models.InternetFirewallUpdateRuleInput{
 		Rule: &cato_models.InternetFirewallUpdateRuleDataInput{
 			Source: &cato_models.InternetFirewallSourceUpdateInput{
@@ -3329,6 +3327,20 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 			},
 			Exceptions: []*cato_models.InternetFirewallRuleExceptionInput{},
 		},
+	}
+
+	// setting input for moving rule
+	inputMoveRule := cato_models.PolicyMoveRuleInput{}
+
+	//setting at (to move rule)
+	if !plan.At.IsNull() {
+		inputMoveRule.To = &cato_models.PolicyRulePositionInput{}
+		positionInput := PolicyRulePositionInput{}
+		diags = plan.At.As(ctx, &positionInput, basetypes.ObjectAsOptions{})
+		resp.Diagnostics.Append(diags...)
+
+		inputMoveRule.To.Position = (*cato_models.PolicyRulePositionEnum)(positionInput.Position.ValueStringPointer())
+		inputMoveRule.To.Ref = positionInput.Ref.ValueStringPointer()
 	}
 
 	// setting rule
@@ -4973,6 +4985,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// settings other rule attributes
+	inputMoveRule.ID = *ruleInput.ID.ValueStringPointer()
 	input.ID = *ruleInput.ID.ValueStringPointer()
 	input.Rule.Name = ruleInput.Name.ValueStringPointer()
 	input.Rule.Description = ruleInput.Description.ValueStringPointer()
@@ -4989,15 +5002,37 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	mutationInput := &cato_models.InternetFirewallPolicyMutationInput{}
+	tflog.Debug(ctx, "internet_fw_rule move", map[string]interface{}{
+		"input": utils.InterfaceToJSONString(inputMoveRule),
+	})
 
-	tflog.Debug(ctx, "internet_fw_policy update", map[string]interface{}{
-		"query": utils.InterfaceToJSONString(mutationInput),
+	//move rule
+	moveRule, err := r.client.catov2.PolicyInternetFirewallMoveRule(ctx, &cato_models.InternetFirewallPolicyMutationInput{}, inputMoveRule, r.client.AccountId)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Catov2 API PolicyInternetFirewallMoveRule error",
+			err.Error(),
+		)
+		return
+	}
+
+	// check for errors
+	if moveRule.Policy.InternetFirewall.MoveRule.Status != "SUCCESS" {
+		for _, item := range moveRule.Policy.InternetFirewall.MoveRule.GetErrors() {
+			resp.Diagnostics.AddError(
+				"API Error Moving Rule Resource",
+				fmt.Sprintf("%s : %s", *item.ErrorCode, *item.ErrorMessage),
+			)
+		}
+		return
+	}
+
+	tflog.Debug(ctx, "internet_fw_rule update", map[string]interface{}{
 		"input": utils.InterfaceToJSONString(input),
 	})
 
-	//creating new rule
-	updateRule, err := r.client.catov2.PolicyInternetFirewallUpdateRule(ctx, mutationInput, input, r.client.AccountId)
+	//Update new rule
+	updateRule, err := r.client.catov2.PolicyInternetFirewallUpdateRule(ctx, &cato_models.InternetFirewallPolicyMutationInput{}, input, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Catov2 API PolicyInternetFirewallUpdateRule error",
@@ -5010,7 +5045,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 	if updateRule.Policy.InternetFirewall.UpdateRule.Status != "SUCCESS" {
 		for _, item := range updateRule.Policy.InternetFirewall.UpdateRule.GetErrors() {
 			resp.Diagnostics.AddError(
-				"API Error Creating Resource",
+				"API Error Update Resource",
 				fmt.Sprintf("%s : %s", *item.ErrorCode, *item.ErrorMessage),
 			)
 		}

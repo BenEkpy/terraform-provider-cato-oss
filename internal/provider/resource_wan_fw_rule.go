@@ -53,9 +53,6 @@ func (r *wanFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 						Description: "",
 						Required:    false,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.RequiresReplace(),
-						},
 					},
 				},
 			},
@@ -4382,6 +4379,9 @@ func (r *wanFwRuleResource) Update(ctx context.Context, req resource.UpdateReque
 		},
 	}
 
+	// setting input for moving rule
+	inputMoveRule := cato_models.PolicyMoveRuleInput{}
+
 	// setting rule
 	ruleInput := Policy_Policy_WanFirewall_Policy_Rules_Rule{}
 	diags = plan.Rule.As(ctx, &ruleInput, basetypes.ObjectAsOptions{})
@@ -6576,7 +6576,19 @@ func (r *wanFwRuleResource) Update(ctx context.Context, req resource.UpdateReque
 		}
 	}
 
+	//setting at (to move rule)
+	if !plan.At.IsNull() {
+		inputMoveRule.To = &cato_models.PolicyRulePositionInput{}
+		positionInput := PolicyRulePositionInput{}
+		diags = plan.At.As(ctx, &positionInput, basetypes.ObjectAsOptions{})
+		resp.Diagnostics.Append(diags...)
+
+		inputMoveRule.To.Position = (*cato_models.PolicyRulePositionEnum)(positionInput.Position.ValueStringPointer())
+		inputMoveRule.To.Ref = positionInput.Ref.ValueStringPointer()
+	}
+
 	// settings other rule attributes
+	inputMoveRule.ID = *ruleInput.ID.ValueStringPointer()
 	input.ID = *ruleInput.ID.ValueStringPointer()
 	input.Rule.Name = ruleInput.Name.ValueStringPointer()
 	input.Rule.Description = ruleInput.Description.ValueStringPointer()
@@ -6591,6 +6603,31 @@ func (r *wanFwRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	tflog.Debug(ctx, "wan_fw_rule move", map[string]interface{}{
+		"input": utils.InterfaceToJSONString(inputMoveRule),
+	})
+
+	//move rule
+	moveRule, err := r.client.catov2.PolicyWanFirewallMoveRule(ctx, inputMoveRule, r.client.AccountId)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Catov2 API PolicyWanFirewallMoveRule error",
+			err.Error(),
+		)
+		return
+	}
+
+	// check for errors
+	if moveRule.Policy.WanFirewall.MoveRule.Status != "SUCCESS" {
+		for _, item := range moveRule.Policy.WanFirewall.MoveRule.GetErrors() {
+			resp.Diagnostics.AddError(
+				"API Error Moving Rule Resource",
+				fmt.Sprintf("%s : %s", *item.ErrorCode, *item.ErrorMessage),
+			)
+		}
 		return
 	}
 

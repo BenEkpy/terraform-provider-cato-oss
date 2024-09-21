@@ -153,7 +153,6 @@ func (r *internetFwSectionResource) Create(ctx context.Context, req resource.Cre
 		path.Root("section").AtName("id"),
 		policyChange.GetPolicy().GetInternetFirewall().GetAddSection().Section.GetSection().ID,
 	)
-
 }
 
 func (r *internetFwSectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -204,7 +203,6 @@ func (r *internetFwSectionResource) Read(ctx context.Context, req resource.ReadR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 }
 
 func (r *internetFwSectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -264,7 +262,7 @@ func (r *internetFwSectionResource) Update(ctx context.Context, req resource.Upd
 	if moveSection.Policy.InternetFirewall.MoveSection.Status != "SUCCESS" {
 		for _, item := range moveSection.Policy.InternetFirewall.MoveSection.GetErrors() {
 			resp.Diagnostics.AddError(
-				"API Error Creating Resource",
+				"API Error Moving Section Resource",
 				fmt.Sprintf("%s : %s", *item.ErrorCode, *item.ErrorMessage),
 			)
 		}
