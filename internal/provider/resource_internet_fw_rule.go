@@ -1500,7 +1500,7 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// setting rule
-	if !plan.At.IsNull() {
+	if !plan.Rule.IsNull() {
 
 		input.Rule = &cato_models.InternetFirewallAddRuleDataInput{}
 		ruleInput := Policy_Policy_InternetFirewall_Policy_Rules_Rule{}

@@ -1982,7 +1982,7 @@ func (r *wanFwRuleResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	// setting rule
-	if !plan.At.IsNull() {
+	if !plan.Rule.IsNull() {
 
 		input.Rule = &cato_models.WanFirewallAddRuleDataInput{}
 		ruleInput := Policy_Policy_WanFirewall_Policy_Rules_Rule{}
