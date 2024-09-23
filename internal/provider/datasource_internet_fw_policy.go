@@ -719,7 +719,7 @@ func (d *InternetFwPolicyDataSource) Read(ctx context.Context, req datasource.Re
 	var state internetFwPolicyList
 
 	queryPolicy := &cato_models.InternetFirewallPolicyInput{}
-	body, err := d.client.catov2.Policy(ctx, queryPolicy, d.client.AccountId)
+	body, err := d.client.catov2.PolicyInternetFirewall(ctx, queryPolicy, d.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Catov2 API error in (d *InternetFwPolicyDataSource) Read",

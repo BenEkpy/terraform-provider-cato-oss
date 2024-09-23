@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	cato_models "github.com/routebyintuition/cato-go-sdk/models"
+	"github.com/routebyintuition/cato-go-sdk/scalars"
 )
 
 var (
@@ -872,6 +873,16 @@ func makeStringSliceFromStringList(src []types.String) []string {
 	return res
 }
 
+func makAsnStringSliceFromStringList(src []types.String) []scalars.Asn16 {
+	res := []scalars.Asn16{}
+
+	for _, element := range src {
+		res = append(res, scalars.Asn16(element.ValueString()))
+	}
+
+	return res
+}
+
 func makeStringListFromStringSlice(src any) []types.String {
 	res := []types.String{}
 
@@ -1146,7 +1157,7 @@ func (r *internetFwPolicyResource) Create(ctx context.Context, req resource.Crea
 				Subnet:                 makeStringSliceFromStringList(plan.Rule.Destination.Subnet),
 				IPRange:                ipDestRange,
 				GlobalIPRange:          globalDestIpRange,
-				RemoteAsn:              makeStringSliceFromStringList(plan.Rule.Destination.RemoteAsn),
+				RemoteAsn:              makAsnStringSliceFromStringList(plan.Rule.Destination.RemoteAsn),
 			},
 			Service: serviceInput,
 			Action:  actionEnum,
@@ -1225,7 +1236,8 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	queryPolicy := &cato_models.InternetFirewallPolicyInput{}
-	body, err := r.info.catov2.Policy(ctx, queryPolicy, r.info.AccountId)
+
+	body, err := r.info.catov2.PolicyInternetFirewall(ctx, queryPolicy, r.info.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Catov2 API error",
@@ -1337,7 +1349,7 @@ func (r *internetFwPolicyResource) Read(ctx context.Context, req resource.ReadRe
 
 			dstRemoteAsn := []types.String{}
 			for _, val := range ruleListItem.Rule.Destination.RemoteAsn {
-				dstRemoteAsn = append(dstRemoteAsn, types.StringValue(val))
+				dstRemoteAsn = append(dstRemoteAsn, types.StringValue(string(val)))
 			}
 			state.Rule.Destination.RemoteAsn = dstRemoteAsn
 
@@ -1625,7 +1637,7 @@ func (r *internetFwPolicyResource) Update(ctx context.Context, req resource.Upda
 	sourceIpSlice := makeStringSliceFromStringList(plan.Rule.Source.IP)
 	destIpSlice := makeStringSliceFromStringList(plan.Rule.Destination.IP)
 	destSubnetSlice := makeStringSliceFromStringList(plan.Rule.Destination.Subnet)
-	destRemoteAsn := makeStringSliceFromStringList(plan.Rule.Destination.RemoteAsn)
+	destRemoteAsn := makAsnStringSliceFromStringList(plan.Rule.Destination.RemoteAsn)
 
 	updateInput := cato_models.InternetFirewallUpdateRuleInput{
 		ID: state.Rule.ID.ValueString(),
@@ -1713,7 +1725,7 @@ func (r *internetFwPolicyResource) Update(ctx context.Context, req resource.Upda
 	// Submission of plan results to state
 
 	queryPolicy := &cato_models.InternetFirewallPolicyInput{}
-	queryResult, err := r.info.catov2.Policy(ctx, queryPolicy, r.info.AccountId)
+	queryResult, err := r.info.catov2.PolicyInternetFirewall(ctx, queryPolicy, r.info.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Catov2 API Policy(ctx, queryPolicy, r.info.AccountId) error",
@@ -1823,7 +1835,7 @@ func (r *internetFwPolicyResource) Update(ctx context.Context, req resource.Upda
 
 			dstRemoteAsn := []types.String{}
 			for _, val := range ruleListItem.Rule.Destination.RemoteAsn {
-				dstRemoteAsn = append(dstRemoteAsn, types.StringValue(val))
+				dstRemoteAsn = append(dstRemoteAsn, types.StringValue(string(val)))
 			}
 			plan.Rule.Destination.RemoteAsn = dstRemoteAsn
 
