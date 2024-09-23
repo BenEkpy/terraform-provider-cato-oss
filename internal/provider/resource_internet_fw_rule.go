@@ -38,41 +38,43 @@ func (r *internetFwRuleResource) Metadata(_ context.Context, req resource.Metada
 
 func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "The `cato-oss_if_rule` resource contains the configuration parameters necessary to add rule to the Internet Firewall. (check https://support.catonetworks.com/hc/en-us/articles/4413273486865-What-is-the-Cato-Internet-Firewall for more details). Documentation for the underlying API used in this resource can be found at [mutation.policy.internetFirewall.addRule()](https://api.catonetworks.com/documentation/#mutation-policy.internetFirewall.addRule).",
 		Attributes: map[string]schema.Attribute{
 			"at": schema.SingleNestedAttribute{
-				Description: "",
+				Description: "Position of the rule in the policy",
 				Required:    true,
 				Optional:    false,
 				Attributes: map[string]schema.Attribute{
 					"position": schema.StringAttribute{
-						Description: "",
+						Description: "Position relative to a policy, a section or another rule",
 						Required:    true,
 						Optional:    false,
 					},
 					"ref": schema.StringAttribute{
-						Description: "",
+						Description: "The identifier of the object (e.g. a rule, a section) relative to which the position of the added rule is defined",
 						Required:    false,
 						Optional:    true,
 					},
 				},
 			},
 			"rule": schema.SingleNestedAttribute{
-				Description: "",
+				Description: "Parameters for the rule you are adding",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Computed: true,
-						Optional: false,
+						Description: "ID of the  rule",
+						Computed:    true,
+						Optional:    false,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
 					},
 					"name": schema.StringAttribute{
-						Description: "",
+						Description: "Name of the rule",
 						Required:    true,
 					},
 					"description": schema.StringAttribute{
-						Description: "",
+						Description: "Description of the rule",
 						Required:    false,
 						Optional:    true,
 					},
@@ -82,23 +84,19 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Optional:    true,
 					},
 					"enabled": schema.BoolAttribute{
-						Description: "",
+						Description: "Attribute to define rule status (enabled or disabled)",
 						Required:    true,
 						Optional:    false,
 					},
 					"section": schema.SingleNestedAttribute{
-						Required: false,
-						Optional: true,
+						Description: "",
+						Required:    false,
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"name": schema.StringAttribute{
 								Description: "",
 								Required:    false,
 								Optional:    true,
-								Validators: []validator.String{
-									stringvalidator.ConflictsWith(path.Expressions{
-										path.MatchRelative().AtParent().AtName("id"),
-									}...),
-								},
 							},
 							"id": schema.StringAttribute{
 								Description: "",
@@ -108,18 +106,20 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						},
 					},
 					"source": schema.SingleNestedAttribute{
-						Required: false,
-						Optional: true,
+						Description: "Source traffic matching criteria. Logical ‘OR’ is applied within the criteria set. Logical ‘AND’ is applied between criteria sets.",
+						Required:    false,
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"ip": schema.ListAttribute{
-								Description: "",
+								Description: "Pv4 address list",
 								ElementType: types.StringType,
 								Required:    false,
 								Optional:    true,
 							},
 							"host": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Hosts and servers defined for your account",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -141,8 +141,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"site": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Site defined for the account",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -165,13 +166,14 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 							},
 							"subnet": schema.ListAttribute{
 								ElementType: types.StringType,
-								Description: "",
+								Description: "Subnets and network ranges defined for the LAN interfaces of a site",
 								Required:    false,
 								Optional:    true,
 							},
 							"ip_range": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Multiple separate IP addresses or an IP range",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"from": schema.StringAttribute{
@@ -188,8 +190,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"global_ip_range": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Globally defined IP range, IP and subnet objects",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -211,8 +214,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"network_interface": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Network range defined for a site",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -234,8 +238,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"site_network_subnet": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "GlobalRange + InterfaceSubnet",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -257,8 +262,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"floating_subnet": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Floating Subnets (ie. Floating Ranges) are used to identify traffic exactly matched to the route advertised by BGP. They are not associated with a specific site. This is useful in scenarios such as active-standby high availability routed via BGP.",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -280,8 +286,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"user": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Individual users defined for the account",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -303,8 +310,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"users_group": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Group of users",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -326,8 +334,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"group": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Groups defined for your account",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -349,8 +358,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"system_group": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Predefined Cato groups",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -374,13 +384,14 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						},
 					},
 					"connection_origin": schema.StringAttribute{
-						Description: "",
+						Description: "Connection origin of the traffic (https://api.catonetworks.com/documentation/#definition-ConnectionOriginEnum)",
 						Optional:    true,
 						Required:    false,
 					},
 					"country": schema.ListNestedAttribute{
-						Required: false,
-						Optional: true,
+						Description: "Source country traffic matching criteria. Logical ‘OR’ is applied within the criteria set. Logical ‘AND’ is applied between criteria sets.",
+						Required:    false,
+						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -402,8 +413,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						},
 					},
 					"device": schema.ListNestedAttribute{
-						Required: false,
-						Optional: true,
+						Description: "Source Device Profile traffic matching criteria. Logical ‘OR’ is applied within the criteria set. Logical ‘AND’ is applied between criteria sets.",
+						Required:    false,
+						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -426,17 +438,19 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 					},
 					"device_os": schema.ListAttribute{
 						ElementType: types.StringType,
-						Description: "",
+						Description: "Source device Operating System traffic matching criteria. Logical ‘OR’ is applied within the criteria set. Logical ‘AND’ is applied between criteria sets.(https://api.catonetworks.com/documentation/#definition-OperatingSystem)",
 						Optional:    true,
 						Required:    false,
 					},
 					"destination": schema.SingleNestedAttribute{
-						Optional: true,
-						Required: false,
+						Description: "Destination traffic matching criteria. Logical ‘OR’ is applied within the criteria set. Logical ‘AND’ is applied between criteria sets.",
+						Optional:    true,
+						Required:    false,
 						Attributes: map[string]schema.Attribute{
 							"application": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Applications for the rule (pre-defined)",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -458,8 +472,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"custom_app": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Custom (user-defined) applications",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -481,8 +496,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"app_category": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Cato category of applications which are dynamically updated by Cato",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -504,7 +520,7 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"custom_category": schema.ListNestedAttribute{
-								Description: "",
+								Description: "Custom Categories – Groups of objects such as predefined and custom applications, predefined and custom services, domains, FQDNs etc.",
 								Required:    false,
 								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
@@ -528,8 +544,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"sanctioned_apps_category": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Sanctioned Cloud Applications - apps that are approved and generally represent an understood and acceptable level of risk in your organization.",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -551,8 +568,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"country": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Countries",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -575,31 +593,32 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 							},
 							"domain": schema.ListAttribute{
 								ElementType: types.StringType,
-								Description: "",
+								Description: "A Second-Level Domain (SLD). It matches all Top-Level Domains (TLD), and subdomains that include the Domain. Example: example.com.",
 								Required:    false,
 								Optional:    true,
 							},
 							"fqdn": schema.ListAttribute{
 								ElementType: types.StringType,
-								Description: "",
+								Description: "An exact match of the fully qualified domain (FQDN). Example: www.my.example.com.",
 								Required:    false,
 								Optional:    true,
 							},
 							"ip": schema.ListAttribute{
 								ElementType: types.StringType,
-								Description: "",
+								Description: "IPv4 addresses",
 								Required:    false,
 								Optional:    true,
 							},
 							"subnet": schema.ListAttribute{
 								ElementType: types.StringType,
-								Description: "",
+								Description: "Network subnets in CIDR notation",
 								Required:    false,
 								Optional:    true,
 							},
 							"ip_range": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "A range of IPs. Every IP within the range will be matched",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"from": schema.StringAttribute{
@@ -616,8 +635,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"global_ip_range": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Globally defined IP range, IP and subnet objects",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -640,19 +660,21 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 							},
 							"remote_asn": schema.ListAttribute{
 								ElementType: types.StringType,
-								Description: "",
+								Description: "Remote Autonomous System Number (ASN)",
 								Required:    false,
 								Optional:    true,
 							},
 						},
 					},
 					"service": schema.SingleNestedAttribute{
-						Required: false,
-						Optional: true,
+						Description: "Destination service traffic matching criteria. Logical ‘OR’ is applied within the criteria set. Logical ‘AND’ is applied between criteria sets.",
+						Required:    false,
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"standard": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Standard Service to which this Internet Firewall rule applies",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
@@ -674,19 +696,21 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"custom": schema.ListNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Custom Service defined by a combination of L4 ports and an IP Protocol",
+								Required:    false,
+								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"port": schema.ListAttribute{
 											ElementType: types.StringType,
-											Description: "",
+											Description: "List of TCP/UDP port",
 											Optional:    true,
 											Required:    false,
 										},
 										"port_range": schema.SingleNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "TCP/UDP port ranges",
+											Required:    false,
+											Optional:    true,
 											Attributes: map[string]schema.Attribute{
 												"from": schema.StringAttribute{
 													Description: "",
@@ -701,7 +725,7 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"protocol": schema.StringAttribute{
-											Description: "",
+											Description: "IP Protocol (https://api.catonetworks.com/documentation/#definition-IpProtocol)",
 											Required:    false,
 											Optional:    true,
 										},
@@ -711,15 +735,16 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						},
 					},
 					"action": schema.StringAttribute{
-						Description: "",
+						Description: "The action applied by the Internet Firewall if the rule is matched (https://api.catonetworks.com/documentation/#definition-InternetFirewallActionEnum)",
 						Required:    true,
 					},
 					"tracking": schema.SingleNestedAttribute{
-						Required: false,
-						Optional: true,
+						Description: "Tracking information when the rule is matched, such as events and notifications",
+						Required:    false,
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"event": schema.SingleNestedAttribute{
-								Description: "",
+								Description: "When enabled, create an event each time the rule is matched",
 								Required:    true,
 								Attributes: map[string]schema.Attribute{
 									"enabled": schema.BoolAttribute{
@@ -730,7 +755,7 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"alert": schema.SingleNestedAttribute{
-								Description: "",
+								Description: "When enabled, send an alert each time the rule is matched",
 								Required:    false,
 								Optional:    true,
 								Attributes: map[string]schema.Attribute{
@@ -739,12 +764,13 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 										Required:    true,
 									},
 									"frequency": schema.StringAttribute{
-										Description: "",
+										Description: "Returns data for the alert frequency (https://api.catonetworks.com/documentation/#definition-PolicyRuleTrackingFrequencyEnum)",
 										Required:    true,
 									},
 									"subscription_group": schema.ListNestedAttribute{
-										Required: false,
-										Optional: true,
+										Description: "Returns data for the Subscription Group that receives the alert",
+										Required:    false,
+										Optional:    true,
 										NestedObject: schema.NestedAttributeObject{
 											Attributes: map[string]schema.Attribute{
 												"name": schema.StringAttribute{
@@ -766,8 +792,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 										},
 									},
 									"webhook": schema.ListNestedAttribute{
-										Required: false,
-										Optional: true,
+										Description: "Returns data for the Webhook that receives the alert",
+										Required:    false,
+										Optional:    true,
 										NestedObject: schema.NestedAttributeObject{
 											Attributes: map[string]schema.Attribute{
 												"name": schema.StringAttribute{
@@ -789,8 +816,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 										},
 									},
 									"mailing_list": schema.ListNestedAttribute{
-										Required: false,
-										Optional: true,
+										Description: "Returns data for the Mailing List that receives the alert",
+										Required:    false,
+										Optional:    true,
 										NestedObject: schema.NestedAttributeObject{
 											Attributes: map[string]schema.Attribute{
 												"name": schema.StringAttribute{
@@ -816,16 +844,18 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						},
 					},
 					"schedule": schema.SingleNestedAttribute{
-						Optional: true,
+						Description: "The time period specifying when the rule is enabled, otherwise it is disabled.",
+						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"active_on": schema.StringAttribute{
-								Description: "",
+								Description: "Define when the rule is active (https://api.catonetworks.com/documentation/#definition-PolicyActiveOnEnum)",
 								Required:    true,
 								Optional:    false,
 							},
 							"custom_timeframe": schema.SingleNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Input of data for a custom one-time time range that a rule is active",
+								Required:    false,
+								Optional:    true,
 								Attributes: map[string]schema.Attribute{
 									"from": schema.StringAttribute{
 										Description: "",
@@ -840,8 +870,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 							},
 							"custom_recurring": schema.SingleNestedAttribute{
-								Required: false,
-								Optional: true,
+								Description: "Input of data for a custom recurring time range that a rule is active",
+								Required:    false,
+								Optional:    true,
 								Attributes: map[string]schema.Attribute{
 									"from": schema.StringAttribute{
 										Description: "",
@@ -855,7 +886,7 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 									},
 									"days": schema.ListAttribute{
 										ElementType: types.StringType,
-										Description: "",
+										Description: "(https://api.catonetworks.com/documentation/#definition-DayOfWeek)",
 										Required:    true,
 										Optional:    false,
 									},
@@ -864,18 +895,20 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						},
 					},
 					"exceptions": schema.ListNestedAttribute{
-						Required: false,
-						Optional: true,
+						Description: "The set of exceptions for the rule. Exceptions define when the rule will be ignored and the firewall evaluation will continue with the lower priority rules.",
+						Required:    false,
+						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
-									Description: "",
+									Description: "A unique name of the rule exception.",
 									Required:    false,
 									Optional:    true,
 								},
 								"source": schema.SingleNestedAttribute{
-									Required: false,
-									Optional: true,
+									Description: "Source traffic matching criteria for the exception.",
+									Required:    false,
+									Optional:    true,
 									Attributes: map[string]schema.Attribute{
 										"ip": schema.ListAttribute{
 											Description: "",
@@ -907,8 +940,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"site": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -936,8 +970,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											Optional:    true,
 										},
 										"ip_range": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"from": schema.StringAttribute{
@@ -954,8 +989,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"global_ip_range": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -977,8 +1013,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"network_interface": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1000,8 +1037,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"site_network_subnet": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1023,8 +1061,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"floating_subnet": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1046,8 +1085,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"user": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1069,8 +1109,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"users_group": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1092,8 +1133,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"group": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1115,8 +1157,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"system_group": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1140,8 +1183,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 									},
 								},
 								"country": schema.ListNestedAttribute{
-									Required: false,
-									Optional: true,
+									Description: "Source country matching criteria for the exception.",
+									Required:    false,
+									Optional:    true,
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
 											"name": schema.StringAttribute{
@@ -1164,23 +1208,25 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 								},
 								"device": schema.ListAttribute{
 									ElementType: types.StringType,
-									Description: "",
+									Description: "Source Device Profile matching criteria for the exception.",
 									Optional:    true,
 									Required:    false,
 								},
 								"device_os": schema.ListAttribute{
 									ElementType: types.StringType,
-									Description: "",
+									Description: "Source device OS matching criteria for the exception. (https://api.catonetworks.com/documentation/#definition-OperatingSystem)",
 									Optional:    true,
 									Required:    false,
 								},
 								"destination": schema.SingleNestedAttribute{
-									Optional: true,
-									Required: false,
+									Description: "Destination service matching criteria for the exception.",
+									Optional:    true,
+									Required:    false,
 									Attributes: map[string]schema.Attribute{
 										"application": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1202,8 +1248,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"custom_app": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1225,8 +1272,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"app_category": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1272,8 +1320,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"sanctioned_apps_category": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1295,8 +1344,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"country": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1342,8 +1392,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											Optional:    true,
 										},
 										"ip_range": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"from": schema.StringAttribute{
@@ -1360,8 +1411,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"global_ip_range": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
@@ -1391,8 +1443,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 									},
 								},
 								"service": schema.SingleNestedAttribute{
-									Required: false,
-									Optional: true,
+									Description: "Destination service matching criteria for the exception.",
+									Required:    false,
+									Optional:    true,
 									Attributes: map[string]schema.Attribute{
 										"standard": schema.ListNestedAttribute{
 											Required: false,
@@ -1418,8 +1471,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 											},
 										},
 										"custom": schema.ListNestedAttribute{
-											Required: false,
-											Optional: true,
+											Description: "",
+											Required:    false,
+											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"port": schema.ListAttribute{
@@ -1429,8 +1483,9 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 														Required:    false,
 													},
 													"port_range": schema.SingleNestedAttribute{
-														Required: false,
-														Optional: true,
+														Description: "",
+														Required:    false,
+														Optional:    true,
 														Attributes: map[string]schema.Attribute{
 															"from": schema.StringAttribute{
 																Description: "",
@@ -1455,7 +1510,7 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 									},
 								},
 								"connection_origin": schema.StringAttribute{
-									Description: "",
+									Description: "Connection origin matching criteria for the exception.",
 									Optional:    true,
 									Required:    false,
 								},
@@ -2236,12 +2291,6 @@ func (r *internetFwRuleResource) Create(ctx context.Context, req resource.Create
 				return
 			}
 			input.Rule.Tracking.Event.Enabled = trackingEventInput.Enabled.ValueBool()
-
-			// setting tracking Alert
-			defaultAlert := false
-			input.Rule.Tracking.Alert = &cato_models.PolicyRuleTrackingAlertInput{
-				Enabled: defaultAlert,
-			}
 
 			if !trackingInput.Alert.IsNull() {
 

@@ -5385,11 +5385,6 @@ func (r *wanFwRuleResource) Update(ctx context.Context, req resource.UpdateReque
 		}
 		input.Rule.Tracking.Event.Enabled = trackingEventInput.Enabled.ValueBoolPointer()
 
-		// setting tracking Alert
-		defaultAlert := false
-		input.Rule.Tracking.Alert = &cato_models.PolicyRuleTrackingAlertUpdateInput{
-			Enabled: &defaultAlert,
-		}
 		if !trackingInput.Alert.IsNull() {
 
 			trackingAlertInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Alert{}
