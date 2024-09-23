@@ -3307,7 +3307,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 				Subnet:                 []string{},
 				IPRange:                []*cato_models.IPAddressRangeInput{},
 				GlobalIPRange:          []*cato_models.GlobalIPRangeRefInput{},
-				RemoteAsn:              []string{},
+				RemoteAsn:              []cato_scalars.Asn16{},
 			},
 			Service: &cato_models.InternetFirewallServiceTypeUpdateInput{
 				Standard: []*cato_models.ServiceRefInput{},

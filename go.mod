@@ -1,17 +1,19 @@
 module github.com/BenEkpy/terraform-provider-cato-oss
 
-go 1.22.4
+go 1.22.5
+
+toolchain go1.23.1
 
 require (
 	github.com/hashicorp/terraform-plugin-framework v1.11.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.13.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/routebyintuition/cato-go-sdk v0.2.2
+	github.com/routebyintuition/cato-go-sdk v0.2.3
 )
 
 require (
-	github.com/99designs/gqlgen v0.17.49 // indirect
-	github.com/Yamashou/gqlgenc v0.25.0 // indirect
+	github.com/99designs/gqlgen v0.17.51 // indirect
+	github.com/Yamashou/gqlgenc v0.25.1 // indirect
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -30,9 +32,9 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.16 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sys v0.23.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/text v0.18.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240730163845-b1a4ccb954bf // indirect
 	google.golang.org/grpc v1.65.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
