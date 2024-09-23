@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	cato_models "github.com/routebyintuition/cato-go-sdk/models"
+	"github.com/routebyintuition/cato-go-sdk/scalars"
 	cato_scalars "github.com/routebyintuition/cato-go-sdk/scalars"
 )
 
@@ -3356,7 +3357,7 @@ func (r *internetFwRuleResource) Update(ctx context.Context, req resource.Update
 				Subnet:                 []string{},
 				IPRange:                []*cato_models.IPAddressRangeInput{},
 				GlobalIPRange:          []*cato_models.GlobalIPRangeRefInput{},
-				RemoteAsn:              []string{},
+				RemoteAsn:              []scalars.Asn16{},
 			},
 			Service: &cato_models.InternetFirewallServiceTypeUpdateInput{
 				Standard: []*cato_models.ServiceRefInput{},
