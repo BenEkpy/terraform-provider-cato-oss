@@ -1,24 +1,23 @@
 ---
-page_title: "cato-oss_if_policy Resource - terraform-provider-cato-oss"
+page_title: "cato-oss_if_rule Resource - terraform-provider-cato-oss"
 subcategory: "Provider Reference"
 description: |-
-  Provides a cato-oss_if_policy resource  
+  Provides a cato-oss_if_rule resource  
 ---
 
-# cato-oss_if_policy (Resource)
+# cato-oss_if_rule (Resource)
 
-The `cato-oss_if_policy` resource contains the configuration parameters necessary to 
-add a network range to a cato site. 
-([virtual socket in AWS/Azure, or physical socket](https://support.catonetworks.com/hc/en-us/articles/4413280502929-Working-with-X1500-X1600-and-X1700-Socket-Sites)).
+The `cato-oss_if_rule` resource contains the configuration parameters necessary to 
+add a network range to a cato site.
 Documentation for the underlying API used in this resource can be found at
 [mutation.policy.internetFirewall.addRule()](https://api.catonetworks.com/documentation/#mutation-policy.internetFirewall.addRule).
 
 ## Example Usage
 
 <details>
-<summary>cato-oss_if_policy Resource Variables</summary>
+<summary>cato-oss_if_rule Resource Variables</summary>
 
-### cato-oss_if_policy Resource Variables
+### cato-oss_if_rule Resource Variables
 
 ```hcl
 # Provider variables
@@ -43,7 +42,7 @@ provider "cato-oss" {
 }
 
 ### Resource ###
-resource "cato-oss_if_policy" "example-block-rule" {
+resource "cato-oss_if_rule" "example-block-rule" {
   at = {
     position = "LAST_IN_POLICY"
   }
