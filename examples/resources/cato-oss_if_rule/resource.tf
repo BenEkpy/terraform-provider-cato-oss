@@ -15,48 +15,15 @@ resource "cato-oss_if_rule" "allow_all_and_log" {
   }
 }
 
-
-// prompt remote use group "Domain Users" using category "Media Stream"
-resource "cato-oss_if_rule" "promp_domain_user_media_stream" {
-  at = {
-    position = "LAST_IN_POLICY"
-  }
-  rule = {
-    name    = "Prompt Domain Users for Media Streams"
-    enabled = true
-    action  = "PROMPT"
-    source = {
-      users_group = [
-        {
-          name = "Domain Users"
-        }
-      ]
-    }
-    destination = {
-      app_category = [
-        {
-          name = "Media Stream"
-        }
-      ]
-    }
-    tracking = {
-      event = {
-        enabled = true
-      }
-    }
-  }
-}
-
-
 // block all remote users except "Marketing" using category domain "test.com"
 resource "cato-oss_if_rule" "block_test_com_for_remote_users" {
   at = {
     position = "FIRST_IN_POLICY"
   }
   rule = {
-    name    = "Block Test.com for Remote Users"
-    enabled = true
-    action  = "BLOCK"
+    name              = "Block Test.com for Remote Users"
+    enabled           = true
+    action            = "BLOCK"
     connection_origin = "REMOTE"
     destination = {
       Domain = [

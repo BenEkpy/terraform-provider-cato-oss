@@ -27,9 +27,3 @@ type SiteLocation struct {
 	Address     types.String `tfsdk:"address"`
 	// City        types.String `tfsdk:"city"`
 }
-
-type DhcpSettings struct {
-	DhcpType     types.String `tfsdk:"dhcp_type"`
-	IpRange      types.String `tfsdk:"ip_range"`
-	RelayGroupId types.String `tfsdk:"relay_group_id"`
-}

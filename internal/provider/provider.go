@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/BenEkpy/terraform-provider-cato-oss/internal/catogo"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -42,7 +41,6 @@ type catoClientData struct {
 	BaseURL   string
 	Token     string
 	AccountId string
-	catogo    *catogo.Client
 	catov2    *cato.Client
 }
 
@@ -141,9 +139,6 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		return
 	}
 
-	// packaged client
-	client := catogo.CatoClient(baseurl, token, accountId, p.version)
-
 	// newer client:
 	catoClient, _ := cato.New(baseurl, token, *http.DefaultClient)
 
@@ -151,7 +146,6 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		BaseURL:   baseurl,
 		Token:     token,
 		AccountId: accountId,
-		catogo:    client,
 		catov2:    catoClient,
 	}
 
@@ -171,11 +165,11 @@ func (p *catoProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewSocketSiteResource,
 		NewWanInterfaceResource,
-		NewAdminResource,
 		NewInternetFwRuleResource,
 		NewInternetFwSectionResource,
 		NewWanFwRuleResource,
 		NewWanFwSectionResource,
+		// NewSiteIpsecResource,
 		// NewSiteIpsecResource,
 		NewStaticHostResource,
 		NewNetworkRangeResource,

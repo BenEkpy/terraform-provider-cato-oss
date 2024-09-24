@@ -3,9 +3,9 @@ package provider
 import (
 	"context"
 
-	"github.com/BenEkpy/terraform-provider-cato-oss/internal/catogo"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
@@ -18,7 +18,7 @@ func NewAccountSnapshotSiteDataSource() datasource.DataSource {
 }
 
 type accountSnapshotSiteDataSource struct {
-	client *catogo.Client
+	client *catoClientData
 }
 
 type SiteSnapshot struct {
@@ -154,7 +154,7 @@ type SocketInfo struct {
 
 type SiteInfo struct {
 	Name *string `tfsdk:"name"`
-	Type *string `tfsdk:"type"`
+	// Type *string `tfsdk:"type"`
 	// Description  *string         `tfsdk:"description"`
 	// CountryCode  *string         `tfsdk:"countryCode"`
 	// Region       *string         `tfsdk:"region"`
@@ -192,10 +192,6 @@ func (d *accountSnapshotSiteDataSource) Schema(_ context.Context, _ datasource.S
 						Description: "Site Name",
 						Computed:    true,
 					},
-					"type": schema.StringAttribute{
-						Description: "Site Type",
-						Computed:    true,
-					},
 					"sockets": schema.ListNestedAttribute{
 						Description: "List of sockets attached to the site",
 						Computed:    true,
@@ -227,8 +223,7 @@ func (d *accountSnapshotSiteDataSource) Configure(_ context.Context, req datasou
 		return
 	}
 
-	confData := req.ProviderData.(*catoClientData)
-	d.client = confData.catogo
+	d.client = req.ProviderData.(*catoClientData)
 }
 
 func (d *accountSnapshotSiteDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -240,29 +235,34 @@ func (d *accountSnapshotSiteDataSource) Read(ctx context.Context, req datasource
 		return
 	}
 
-	body, err := d.client.AccountSnapshotSiteById(string(*state.Id))
+	accountSnapshotSite, err := d.client.catov2.AccountSnapshot(ctx, []string{*state.Id}, nil, &d.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Cato API error",
+			"Catov2 API error",
 			err.Error(),
 		)
 		return
 	}
 
-	state = SiteSnapshot{
-		Id: body.Id,
-		Info: &SiteInfo{
-			Name: body.Info.Name,
-			Type: body.Info.Type,
-		},
-	}
+	if len(accountSnapshotSite.AccountSnapshot.Sites) == 1 {
+		state = SiteSnapshot{
+			Id: accountSnapshotSite.AccountSnapshot.Sites[0].ID,
+			Info: &SiteInfo{
+				Name: accountSnapshotSite.AccountSnapshot.Sites[0].InfoSiteSnapshot.Name,
+			},
+		}
 
-	for _, socket := range body.Info.Sockets {
-		state.Info.Sockets = append(state.Info.Sockets, SocketInfo{
-			Id:        socket.Id,
-			Serial:    socket.Serial,
-			IsPrimary: socket.IsPrimary,
-		})
+		for _, socket := range accountSnapshotSite.AccountSnapshot.Sites[0].InfoSiteSnapshot.GetSockets() {
+			state.Info.Sockets = append(state.Info.Sockets, SocketInfo{
+				Id:        socket.ID,
+				Serial:    socket.Serial,
+				IsPrimary: socket.IsPrimary,
+			})
+		}
+
+	} else {
+		tflog.Error(ctx, "Can't find Site into AccountSnapshot")
+		return
 	}
 
 	diags = resp.State.Set(ctx, &state)

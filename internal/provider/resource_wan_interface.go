@@ -3,12 +3,14 @@ package provider
 import (
 	"context"
 
-	"github.com/BenEkpy/terraform-provider-cato-oss/internal/catogo"
+	"github.com/BenEkpy/terraform-provider-cato-oss/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	cato_models "github.com/routebyintuition/cato-go-sdk/models"
 )
 
 var (
@@ -21,17 +23,7 @@ func NewWanInterfaceResource() resource.Resource {
 }
 
 type wanInterfaceResource struct {
-	client *catogo.Client
-}
-
-type WanInterface struct {
-	SiteId              types.String `tfsdk:"site_id"`
-	InterfaceID         types.String `tfsdk:"interface_id"`
-	Name                types.String `tfsdk:"name"`
-	UpstreamBandwidth   types.Int64  `tfsdk:"upstream_bandwidth"`
-	DownstreamBandwidth types.Int64  `tfsdk:"downstream_bandwidth"`
-	Role                types.String `tfsdk:"role"`
-	Precedence          types.String `tfsdk:"precedence"`
+	client *catoClientData
 }
 
 func (r *wanInterfaceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -40,13 +32,14 @@ func (r *wanInterfaceResource) Metadata(_ context.Context, req resource.Metadata
 
 func (r *wanInterfaceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "The `cato-oss_wan_interface` resource contains the configuration parameters necessary to add a wan interface to a socket. ([virtual socket in AWS/Azure, or physical socket](https://support.catonetworks.com/hc/en-us/articles/4413280502929-Working-with-X1500-X1600-and-X1700-Socket-Sites)). Documentation for the underlying API used in this resource can be found at [mutation.updateSocketInterface()](https://api.catonetworks.com/documentation/#mutation-site.updateSocketInterface).",
 		Attributes: map[string]schema.Attribute{
 			"interface_id": schema.StringAttribute{
-				Description: "WAN Interface id",
+				Description: "SocketInterface available ids, INT_# stands for 1,2,3...12 supported ids (https://api.catonetworks.com/documentation/#definition-SocketInterfaceIDEnum)",
 				Required:    true,
 			},
 			"site_id": schema.StringAttribute{
-				Description: "Host Site ID",
+				Description: "Site ID",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -65,24 +58,43 @@ func (r *wanInterfaceResource) Schema(_ context.Context, _ resource.SchemaReques
 				Required:    true,
 			},
 			"role": schema.StringAttribute{
-				Description: "WAN interface role",
+				Description: "WAN interface role (https://api.catonetworks.com/documentation/#definition-SocketInterfaceRole)",
 				Required:    true,
 			},
 			"precedence": schema.StringAttribute{
-				Description: "WAN interface precedence",
+				Description: "WAN interface precedence (https://api.catonetworks.com/documentation/#definition-SocketInterfacePrecedenceEnum)",
 				Required:    true,
 			},
+			// "off_cloud": schema.SingleNestedAttribute{
+			// 	Description: "Off Cloud configuration (https://support.catonetworks.com/hc/en-us/articles/4413265642257-Routing-Traffic-to-an-Off-Cloud-Link#heading-1)",
+			// 	Required:    true,
+			// 	Optional:    false,
+			// 	Attributes: map[string]schema.Attribute{
+			// 		"enabled": schema.BoolAttribute{
+			// 			Description: "Attribute to define off cloud status (enabled or disabled)",
+			// 			Required:    true,
+			// 			Optional:    false,
+			// 		},
+			// 		"public_ip": schema.StringAttribute{
+			// 			Required:    false,
+			// 			Optional:    true,
+			// 		},
+			// 		"public_port": schema.StringAttribute{
+			// 			Required:    false,
+			// 			Optional:    true,
+			// 		},
+			// 	},
+			// },
 		},
 	}
 }
 
-func (d *wanInterfaceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *wanInterfaceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
 
-	confData := req.ProviderData.(*catoClientData)
-	d.client = confData.catogo
+	r.client = req.ProviderData.(*catoClientData)
 }
 
 func (r *wanInterfaceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -94,23 +106,28 @@ func (r *wanInterfaceResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	input := catogo.UpdateSocketInterfaceInput{
+	// setting input
+	input := cato_models.UpdateSocketInterfaceInput{
 		DestType: "CATO",
 		Name:     plan.Name.ValueStringPointer(),
-		Bandwidth: &catogo.SocketInterfaceBandwidthInput{
+		Bandwidth: &cato_models.SocketInterfaceBandwidthInput{
 			UpstreamBandwidth:   *plan.UpstreamBandwidth.ValueInt64Pointer(),
 			DownstreamBandwidth: *plan.DownstreamBandwidth.ValueInt64Pointer(),
 		},
-		Wan: &catogo.SocketInterfaceWanInput{
-			Role:       *plan.Role.ValueStringPointer(),
-			Precedence: *plan.Precedence.ValueStringPointer(),
+		Wan: &cato_models.SocketInterfaceWanInput{
+			Role:       (cato_models.SocketInterfaceRole)(plan.Role.ValueString()),
+			Precedence: (cato_models.SocketInterfacePrecedenceEnum)(plan.Precedence.ValueString()),
 		},
 	}
 
-	_, err := r.client.UpdateSocketInterface(plan.SiteId.ValueString(), plan.InterfaceID.ValueString(), input)
+	tflog.Debug(ctx, "wan_interface create", map[string]interface{}{
+		"input": utils.InterfaceToJSONString(input),
+	})
+
+	_, err := r.client.catov2.SiteUpdateSocketInterface(ctx, plan.SiteId.ValueString(), cato_models.SocketInterfaceIDEnum(plan.InterfaceID.ValueString()), input, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Cato API error",
+			"Catov2 API error",
 			err.Error(),
 		)
 		return
@@ -135,23 +152,28 @@ func (r *wanInterfaceResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	input := catogo.UpdateSocketInterfaceInput{
+	// setting input
+	input := cato_models.UpdateSocketInterfaceInput{
 		DestType: "CATO",
 		Name:     plan.Name.ValueStringPointer(),
-		Bandwidth: &catogo.SocketInterfaceBandwidthInput{
+		Bandwidth: &cato_models.SocketInterfaceBandwidthInput{
 			UpstreamBandwidth:   *plan.UpstreamBandwidth.ValueInt64Pointer(),
 			DownstreamBandwidth: *plan.DownstreamBandwidth.ValueInt64Pointer(),
 		},
-		Wan: &catogo.SocketInterfaceWanInput{
-			Role:       *plan.Role.ValueStringPointer(),
-			Precedence: *plan.Precedence.ValueStringPointer(),
+		Wan: &cato_models.SocketInterfaceWanInput{
+			Role:       (cato_models.SocketInterfaceRole)(plan.Role.ValueString()),
+			Precedence: (cato_models.SocketInterfacePrecedenceEnum)(plan.Precedence.ValueString()),
 		},
 	}
 
-	_, err := r.client.UpdateSocketInterface(plan.SiteId.ValueString(), plan.InterfaceID.ValueString(), input)
+	tflog.Debug(ctx, "wan_interface update", map[string]interface{}{
+		"input": utils.InterfaceToJSONString(input),
+	})
+
+	_, err := r.client.catov2.SiteUpdateSocketInterface(ctx, plan.SiteId.ValueString(), cato_models.SocketInterfaceIDEnum(plan.InterfaceID.ValueString()), input, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Cato API error",
+			"Catov2 API error",
 			err.Error(),
 		)
 		return
@@ -173,57 +195,72 @@ func (r *wanInterfaceResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	// check if site exist before removing static host
-	siteExists, err := r.client.SiteExists(state.SiteId.ValueString())
+	querySiteResult, err := r.client.catov2.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("site"), nil, nil, nil, nil, []string{state.SiteId.ValueString()}, nil, nil, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to connect or request the Cato API",
+			"Catov2 API EntityLookup error",
 			err.Error(),
 		)
 		return
 	}
 
-	var input = catogo.UpdateSocketInterfaceInput{}
-	if siteExists {
+	// check if site exist before removing
+	if len(querySiteResult.EntityLookup.GetItems()) == 1 {
 
-		// Check if there is only one WAN interface & rewrite the input with default one
-		wanInterfaceList, err := r.client.GetSocketWanInterfacelist(state.SiteId.ValueString())
+		// check if there is only one WAN interface & rewrite the input with default one
+		accountSnapshotSite, err := r.client.catov2.AccountSnapshot(ctx, []string{state.SiteId.ValueString()}, nil, &r.client.AccountId)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Unable to connect or request the Cato API",
+				"Catov2 API error",
 				err.Error(),
 			)
 			return
 		}
 
-		if len(wanInterfaceList) == 1 {
-			defaultName := "Default WAN Interface"
-			input = catogo.UpdateSocketInterfaceInput{
+		var c = 0
+		for _, item := range accountSnapshotSite.AccountSnapshot.Sites[0].InfoSiteSnapshot.Interfaces {
+
+			if *item.DestType == "CATO" {
+				c++
+			}
+		}
+
+		input := cato_models.UpdateSocketInterfaceInput{}
+
+		if (c >= 1) && (state.Role == types.StringValue("wan_1")) {
+			input = cato_models.UpdateSocketInterfaceInput{
 				DestType: "CATO",
-				Name:     &defaultName,
-				Bandwidth: &catogo.SocketInterfaceBandwidthInput{
+				Name:     state.InterfaceID.ValueStringPointer(),
+				Bandwidth: &cato_models.SocketInterfaceBandwidthInput{
 					UpstreamBandwidth:   10,
 					DownstreamBandwidth: 10,
 				},
-				Wan: &catogo.SocketInterfaceWanInput{
-					Role:       "wan_1",
-					Precedence: "ACTIVE",
+				Wan: &cato_models.SocketInterfaceWanInput{
+					Role:       (cato_models.SocketInterfaceRole)("wan_1"),
+					Precedence: (cato_models.SocketInterfacePrecedenceEnum)("ACTIVE"),
 				},
 			}
 		} else {
 			// Disabled interface to "remove" an interface
-			input = catogo.UpdateSocketInterfaceInput{
+			input = cato_models.UpdateSocketInterfaceInput{
+				Name:     state.InterfaceID.ValueStringPointer(),
 				DestType: "INTERFACE_DISABLED",
 			}
 		}
 
-		_, err = r.client.UpdateSocketInterface(state.SiteId.ValueString(), state.InterfaceID.ValueString(), input)
+		tflog.Debug(ctx, "wan_interface update", map[string]interface{}{
+			"input": utils.InterfaceToJSONString(input),
+		})
+
+		_, err = r.client.catov2.SiteUpdateSocketInterface(ctx, state.SiteId.ValueString(), cato_models.SocketInterfaceIDEnum(state.InterfaceID.ValueString()), input, r.client.AccountId)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Unable to connect or request the Cato API",
+				"Catov2 API SiteUpdateSocketInterface error",
 				err.Error(),
 			)
 			return
 		}
+
 	}
+
 }
