@@ -36,9 +36,10 @@ func (r *socketSiteResource) Metadata(_ context.Context, req resource.MetadataRe
 
 func (r *socketSiteResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "The `cato-oss_socket_site` resource contains the configuration parameters necessary to add a socket site to the Cato cloud ([virtual socket in AWS/Azure, or physical socket](https://support.catonetworks.com/hc/en-us/articles/4413280502929-Working-with-X1500-X1600-and-X1700-Socket-Sites)). Documentation for the underlying API used in this resource can be found at [mutation.addSocketSite()](https://api.catonetworks.com/documentation/#mutation-site.addSocketSite).",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Identifier for the site",
+				Description: "Site ID",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -56,7 +57,7 @@ func (r *socketSiteResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				},
 			},
 			"site_type": schema.StringAttribute{
-				Description: "Site type (BRANCH, DATACENTER, ...)",
+				Description: "Site type (https://api.catonetworks.com/documentation/#definition-SiteType)",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{
@@ -88,19 +89,19 @@ func (r *socketSiteResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Optional:    true,
 					},
 					"dhcp_settings": schema.SingleNestedAttribute{
-						Description: "Site native range DHCP settings",
+						Description: "Site native range DHCP settings (Only releveant for NATIVE and VLAN range_type)",
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"dhcp_type": schema.StringAttribute{
-								Description: "Site native range dhcp type",
+								Description: "Network range dhcp type (https://api.catonetworks.com/documentation/#definition-DhcpType)",
 								Required:    true,
 							},
 							"ip_range": schema.StringAttribute{
-								Description: "Site native range dhcp range",
+								Description: "Network range dhcp range (format \"192.168.1.10-192.168.1.20\")",
 								Optional:    true,
 							},
 							"relay_group_id": schema.StringAttribute{
-								Description: "Site native range dhcp relay group id",
+								Description: "Network range dhcp relay group id",
 								Optional:    true,
 							},
 						},
@@ -393,7 +394,6 @@ func (r *socketSiteResource) Update(ctx context.Context, req resource.UpdateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 }
 
 func (r *socketSiteResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
