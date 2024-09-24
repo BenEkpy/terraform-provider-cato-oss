@@ -32,31 +32,32 @@ func (r *staticHostResource) Metadata(_ context.Context, req resource.MetadataRe
 
 func (r *staticHostResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "The `cato-oss_static_host` resource contains the configuration parameters necessary to add a static host. Documentation for the underlying API used in this resource can be found at [mutation.addStaticHost()](https://api.catonetworks.com/documentation/#mutation-site.addStaticHost).",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "",
+				Description: "Host ID",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"site_id": schema.StringAttribute{
-				Description: "",
+				Description: "Site ID (Host's parent)",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"name": schema.StringAttribute{
-				Description: "",
+				Description: "Host name",
 				Required:    true,
 			},
 			"ip": schema.StringAttribute{
-				Description: "",
+				Description: "Host IP address",
 				Required:    true,
 			},
 			"mac_address": schema.StringAttribute{
-				Description: "",
+				Description: "Host MAC address (for DHCP reservervation)",
 				Optional:    true,
 			},
 		},
@@ -210,7 +211,7 @@ func (r *staticHostResource) Delete(ctx context.Context, req resource.DeleteRequ
 	querySiteResult, err := r.client.catov2.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("site"), nil, nil, nil, nil, []string{state.SiteId.ValueString()}, nil, nil, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Catov2 API error",
+			"Catov2 API EntityLookup error",
 			err.Error(),
 		)
 		return
@@ -222,7 +223,7 @@ func (r *staticHostResource) Delete(ctx context.Context, req resource.DeleteRequ
 		queryHostResult, err := r.client.catov2.EntityLookup(ctx, r.client.AccountId, cato_models.EntityType("host"), nil, nil, nil, nil, []string{state.Id.ValueString()}, nil, nil, nil)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Catov2 API error",
+				"Catov2 API EntityLookup error",
 				err.Error(),
 			)
 			return
@@ -234,7 +235,7 @@ func (r *staticHostResource) Delete(ctx context.Context, req resource.DeleteRequ
 			_, err := r.client.catov2.SiteRemoveStaticHost(ctx, state.Id.ValueString(), r.client.AccountId)
 			if err != nil {
 				resp.Diagnostics.AddError(
-					"Catov2 API error",
+					"Catov2 API SiteRemoveStaticHost error",
 					err.Error(),
 				)
 				return
