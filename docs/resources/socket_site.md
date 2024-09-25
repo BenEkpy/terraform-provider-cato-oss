@@ -40,7 +40,7 @@ resource "cato-oss_socket_site" "branch_site" {
 
   native_range = {
     native_network_range = "192.168.20.0/24"
-    local_ip             = "192.168.22.1"
+    local_ip             = "192.168.20.1"
     dhcp_settings = {
       dhcp_type = "DHCP_RANGE"
       ip_range  = "192.168.20.10-192.168.20.22"
