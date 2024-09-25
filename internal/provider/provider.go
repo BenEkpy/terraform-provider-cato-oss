@@ -140,7 +140,7 @@ func (p *catoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 	}
 
 	// newer client:
-	catoClient, _ := cato.New(baseurl, token, *http.DefaultClient)
+	catoClient, _ := cato.New(baseurl, token, *http.DefaultClient, "User-Agent", "cato-terraform-"+p.version)
 
 	dataSourceData := &catoClientData{
 		BaseURL:   baseurl,

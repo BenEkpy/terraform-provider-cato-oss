@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	version string = "dev"
+	version string = "0.3.0"
 )
 
 func main() {
