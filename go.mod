@@ -6,8 +6,6 @@ toolchain go1.23.1
 
 require (
 	github.com/hashicorp/terraform-plugin-framework v1.11.0
-	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/routebyintuition/cato-go-sdk v0.2.3-0.20240923173224-5cc83a1f916a
 )
 
 require (
