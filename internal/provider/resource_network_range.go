@@ -189,7 +189,7 @@ func (r *networkRangeResource) Create(ctx context.Context, req resource.CreateRe
 	networkRange, err := r.client.catov2.SiteAddNetworkRange(ctx, lanInterface.ID, input, r.client.AccountId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Cato API error",
+			"Cato API SiteAddNetworkRange error",
 			err.Error(),
 		)
 		return

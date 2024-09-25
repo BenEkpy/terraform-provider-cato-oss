@@ -90,9 +90,8 @@ func (r *internetFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Optional:    false,
 					},
 					"section": schema.SingleNestedAttribute{
-						Description: "",
-						Required:    false,
-						Optional:    true,
+						Required: false,
+						Optional: true,
 						Attributes: map[string]schema.Attribute{
 							"name": schema.StringAttribute{
 								Description: "",

@@ -42,5 +42,3 @@ resource "cato-oss_if_rule" "if_rule_1" {
     action      = "ALLOW"
   }
 }
-
-
