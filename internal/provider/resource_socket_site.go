@@ -355,6 +355,7 @@ func (r *socketSiteResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// setting input other attributes
 	inputUpdateNetworkRange.Name = plan.Name.ValueStringPointer()
+	inputSiteGeneral.Name = plan.Name.ValueStringPointer()
 	inputSiteGeneral.SiteType = (*cato_models.SiteType)(plan.SiteType.ValueStringPointer())
 	inputSiteGeneral.Description = plan.Description.ValueStringPointer()
 
