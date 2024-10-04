@@ -1018,10 +1018,12 @@ func (r *wanFwRuleResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 									"enabled": schema.BoolAttribute{
 										Description: "",
 										Required:    true,
+										Optional:    false,
 									},
 									"frequency": schema.StringAttribute{
 										Description: "Returns data for the alert frequency (https://api.catonetworks.com/documentation/#definition-PolicyRuleTrackingFrequencyEnum)",
 										Required:    true,
+										Optional:    false,
 									},
 									"subscription_group": schema.ListNestedAttribute{
 										Description: "Returns data for the Subscription Group that receives the alert",
@@ -3049,8 +3051,11 @@ func (r *wanFwRuleResource) Create(ctx context.Context, req resource.CreateReque
 
 			if !trackingInput.Alert.IsNull() {
 
+				input.Rule.Tracking.Alert = &cato_models.PolicyRuleTrackingAlertInput{}
+
 				trackingAlertInput := Policy_Policy_WanFirewall_Policy_Rules_Rule_Tracking_Alert{}
 				diags = trackingInput.Alert.As(ctx, &trackingAlertInput, basetypes.ObjectAsOptions{})
+
 				resp.Diagnostics.Append(diags...)
 				if resp.Diagnostics.HasError() {
 					return
