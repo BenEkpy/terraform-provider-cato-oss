@@ -51,6 +51,7 @@ func (p *catoProvider) Metadata(_ context.Context, _ provider.MetadataRequest, r
 
 func (p *catoProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		DeprecationMessage: "This provider is deprecated and will not receive further updates. Please use the official Cato Networks terraform provider available here : https://registry.terraform.io/providers/catonetworks/cato/latest",
 		Attributes: map[string]schema.Attribute{
 			"baseurl": schema.StringAttribute{
 				Description: "URL for the Cato API. Can be provided using CATO_BASEURL environment variable.",
